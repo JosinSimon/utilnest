@@ -12,12 +12,13 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
   const [amount, setAmount] = useState("10000")
   const [rate, setRate] = useState(18)
   const [inclusive, setInclusive] = useState(false)
+  const [interState, setInterState] = useState(false)
 
   const result = useMemo(() => {
     const parsed = Number(amount)
     if (!Number.isFinite(parsed) || parsed < 0) return null
-    return calculateGst({ amount: parsed, rate, inclusive })
-  }, [amount, rate, inclusive])
+    return calculateGst({ amount: parsed, rate, inclusive, interState })
+  }, [amount, rate, inclusive, interState])
 
   return (
     <Card className="overflow-hidden">
@@ -34,7 +35,12 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
 
         <div className="mt-5 grid gap-5 sm:grid-cols-2">
           <div className="space-y-2">
-            <Label htmlFor="gst-amount">Amount (₹)</Label>
+            <Label htmlFor="gst-amount">
+              Amount (₹)
+              <span className="ml-1 text-xs font-normal text-muted-foreground">
+                {inclusive ? "this amount already includes GST" : "before GST is added"}
+              </span>
+            </Label>
             <Input
               id="gst-amount"
               type="number"
@@ -48,13 +54,13 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="gst-mode">GST mode</Label>
+            <Label>GST mode</Label>
             <div className="grid grid-cols-2 gap-2">
               <Button
                 type="button"
                 variant={inclusive ? "outline" : "default"}
                 onClick={() => setInclusive(false)}
-                className={cn(!inclusive && "bg-primary text-primary-foreground")}
+                aria-pressed={!inclusive}
               >
                 Exclusive
               </Button>
@@ -62,7 +68,7 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
                 type="button"
                 variant={inclusive ? "default" : "outline"}
                 onClick={() => setInclusive(true)}
-                className={cn(inclusive && "bg-primary text-primary-foreground")}
+                aria-pressed={inclusive}
               >
                 Inclusive
               </Button>
@@ -83,6 +89,7 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
                 variant="outline"
                 size="sm"
                 onClick={() => setRate(r)}
+                aria-pressed={rate === r}
                 className={cn(
                   "min-w-14",
                   rate === r && "border-primary bg-primary/10 text-primary",
@@ -94,35 +101,79 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
           </div>
         </div>
 
+        <div className="mt-5 flex items-center gap-2">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={interState}
+            onClick={() => setInterState((v) => !v)}
+            className={cn(
+              "relative h-6 w-11 rounded-full transition-colors",
+              interState ? "bg-primary" : "bg-muted",
+            )}
+          >
+            <span
+              className={cn(
+                "absolute top-0.5 size-5 rounded-full bg-white shadow transition-transform",
+                interState ? "translate-x-5" : "translate-x-0.5",
+              )}
+            />
+          </button>
+          <span className="text-sm">
+            Inter-state sale{" "}
+            <span className="text-muted-foreground">(charges IGST)</span>
+          </span>
+        </div>
+
         <div className="mt-6 rounded-xl border bg-secondary/40 p-5">
           {result ? (
-            <dl className="grid gap-3 sm:grid-cols-2">
-              {[
-                {
-                  label: inclusive ? "Total (incl. GST)" : "Base amount",
-                  value: inclusive ? result.total : result.base,
-                },
-                {
-                  label: "GST amount",
-                  value: result.gstAmount,
-                  note: `at ${result.rate * 100}%`,
-                },
-                { label: "CGST", value: result.cgst },
-                { label: "SGST", value: result.sgst },
-              ].map((row) => (
-                <div key={row.label} className="flex items-baseline justify-between gap-2">
-                  <dt className="text-sm text-muted-foreground">{row.label}</dt>
+            <div>
+              <div className="flex items-baseline justify-between rounded-lg bg-primary px-4 py-3 text-primary-foreground">
+                <dt className="text-sm font-medium">
+                  {inclusive ? "Amount before GST" : "Total including GST"}
+                </dt>
+                <dd className="text-2xl font-semibold tabular-nums">
+                  {formatINR(inclusive ? result.base : result.total)}
+                </dd>
+              </div>
+
+              <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="flex items-baseline justify-between gap-2">
+                  <dt className="text-sm text-muted-foreground">Amount before GST</dt>
+                  <dd className="font-semibold tabular-nums">{formatINR(result.base)}</dd>
+                </div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <dt className="text-sm text-muted-foreground">GST amount</dt>
                   <dd className="font-semibold tabular-nums">
-                    {formatINR(row.value)}
-                    {row.note && (
-                      <span className="ml-1 text-xs font-normal text-muted-foreground">
-                        {row.note}
-                      </span>
-                    )}
+                    {formatINR(result.gstAmount)}
+                    <span className="ml-1 text-xs font-normal text-muted-foreground">
+                      at {result.rate}%
+                    </span>
                   </dd>
                 </div>
-              ))}
-            </dl>
+                <div className="flex items-baseline justify-between gap-2">
+                  <dt className="text-sm text-muted-foreground">Total including GST</dt>
+                  <dd className="font-semibold tabular-nums">{formatINR(result.total)}</dd>
+                </div>
+                {interState ? (
+                  <div className="flex items-baseline justify-between gap-2">
+                    <dt className="text-sm text-muted-foreground">IGST</dt>
+                    <dd className="font-semibold tabular-nums">{formatINR(result.igst)}</dd>
+                  </div>
+                ) : (
+                  <div className="flex items-baseline justify-between gap-2 sm:col-span-1">
+                    <dt className="text-sm text-muted-foreground">
+                      CGST <span className="text-xs">(half)</span>
+                    </dt>
+                    <dd className="font-semibold tabular-nums">{formatINR(result.cgst)}</dd>
+                    <dt className="ml-auto pl-2 text-sm text-muted-foreground">
+                      SGST <span className="text-xs">(half)</span>
+                    </dt>
+                    <dd className="font-semibold tabular-nums">{formatINR(result.sgst)}</dd>
+                  </div>
+                )}
+              </dl>
+            </div>
           ) : (
             <p className="text-sm text-muted-foreground">Enter a valid amount to see results.</p>
           )}

@@ -23,13 +23,34 @@ export interface WordStats {
 const WORDS_PER_MINUTE_READ = 200
 const WORDS_PER_MINUTE_SPEAK = 130
 
-function sentencesIn(text: string): number {
-  const matches = text.match(/[.!?…]+(\s|$)/g)
-  if (!matches) return text.trim() ? 1 : 0
-  return matches.length
+const SENTENCE_END = /[.!?…]+(?:\s|$)/g
+
+/**
+ * Counts words the way word processors do: every whitespace-separated token
+ * that contains at least one letter or number. Standalone symbols ("-", "•",
+ * "*", emojis) are not words. Internal punctuation ("don't", "well-known",
+ * "3.14") stays part of the word.
+ */
+export function wordsIn(text: string): number {
+  const tokens = text.split(/\s+/).filter(Boolean)
+  let count = 0
+  for (const token of tokens) {
+    if (/[\p{L}\p{N}]/u.test(token)) count++
+  }
+  return count
 }
 
-function paragraphsIn(text: string): number {
+export function sentencesIn(text: string): number {
+  const trimmed = text.trim()
+  if (!trimmed) return 0
+  SENTENCE_END.lastIndex = 0
+  const endings = trimmed.match(SENTENCE_END)?.length ?? 0
+  if (endings === 0) return 1
+  // an unpunctuated trailing fragment still forms its own sentence
+  return /[.!?…]$/.test(trimmed) ? endings : endings + 1
+}
+
+export function paragraphsIn(text: string): number {
   return text
     .split(/\n{2,}|\r\n{2,}/)
     .map((p) => p.trim())
@@ -47,7 +68,7 @@ function densityIn(text: string): KeywordDensity[] {
   ])
 
   const counts = new Map<string, number>()
-  const words = text.toLowerCase().match(/[a-z0-9']+/g) ?? []
+  const words = text.toLowerCase().match(/[\p{L}\p{N}']+/gu) ?? []
   for (const word of words) {
     if (stop.has(word) || word.length < 2) continue
     counts.set(word, (counts.get(word) ?? 0) + 1)
@@ -59,8 +80,7 @@ function densityIn(text: string): KeywordDensity[] {
 }
 
 export const countWords: TextEngine<TextInput, WordStats> = ({ text }) => {
-  const trimmed = text.trim()
-  const words = trimmed ? (trimmed.match(/\S+/g)?.length ?? 0) : 0
+  const words = wordsIn(text)
   const characters = text.length
   const charactersNoSpaces = text.replace(/\s+/g, "").length
 
