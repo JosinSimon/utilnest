@@ -26,12 +26,12 @@ export const definition: ToolDefinition = {
     {
       title: "Regular saving plan",
       input: "₹5,000/month at 7% for 5 years",
-      output: "Deposited ₹3,00,000 · Maturity ≈ ₹3,61,000",
+      output: "Deposited ₹3,00,000 · Maturity ≈ ₹3,59,700",
     },
     {
       title: "Long-term RD",
       input: "₹10,000/month at 7.5% for 10 years",
-      output: "Deposited ₹12,00,000 · Maturity ≈ ₹17,42,000",
+      output: "Deposited ₹12,00,000 · Maturity ≈ ₹17,85,800",
     },
   ],
 
@@ -60,7 +60,7 @@ export const definition: ToolDefinition = {
     {
       question: "How is RD interest calculated?",
       answer:
-        "Banks calculate RD interest using quarterly compounding. The calculator applies the standard formula M = P × ((1+i)^n − 1) ÷ (1 − (1+i)^(−1/3)), where P is the monthly deposit, i is the quarterly rate and n is the number of quarters.",
+        "Banks calculate RD interest using quarterly compounding. The calculator applies the standard formula M = P × ((1+i)^n − 1) ÷ (1 − (1+i)^(−1/3)), where P is the monthly deposit, i is the quarterly rate and n is the number of quarters. For tenures that are not whole quarters (for example 2 years 7 months), every monthly deposit is compounded over its true fractional number of quarters rather than being rounded down.",
     },
     {
       question: "Can I choose my RD tenure?",

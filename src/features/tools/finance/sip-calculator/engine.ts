@@ -17,17 +17,30 @@ export interface SipResult {
 }
 
 const round2 = (value: number): number => Math.round(value * 100) / 100
+const toPaise = (value: number): number => Math.round(value * 100)
 
 /**
- * SIP (Systematic Investment Plan) growth engine.
- *
- * Contributions are assumed to happen at the start of each month, matching how
- * most mutual fund SIPs are executed (the "SIP in advance" convention). The
- * maturity value is the future value of an annuity due:
+ * SIP (Systematic Investment Plan) growth engine using the standard Indian
+ * mutual fund convention:
  *
  *   FV = P × ((1+r)^n − 1) / r × (1+r)
  *
- * At 0% growth the maturity value simply equals the total invested.
+ * Two conventions are assumed, both matching how most Indian calculators
+ * (and AMFI) work:
+ *
+ *   1. Contributions are made at the START of each month — the "SIP in
+ *      advance" annuity-due convention. The trailing × (1+r) term accounts
+ *      for the first instalment being invested immediately.
+ *   2. The monthly rate is the annual rate divided by 12 (r = annual/12/100)
+ *      and the number of periods is Years × 12 + Months — NOT rounded down
+ *      to decimal years. This is the simple-rate convention used by AMFI and
+ *      most Indian tools (Groww uses a compounded geometric monthly rate
+ *      instead, which gives a slightly lower value).
+ *
+ * All running amounts are tracked in integer paise — the same exact-arithmetic
+ * approach used by the PPF and GST calculators — so Total Invested +
+ * Estimated Return equals Maturity Value precisely, with no floating-point
+ * drift. At 0% growth the maturity value simply equals the total invested.
  */
 export const calculateSip: CalculatorEngine<SipInput, SipResult> = ({
   monthly,
@@ -42,23 +55,24 @@ export const calculateSip: CalculatorEngine<SipInput, SipResult> = ({
   const annual = Math.max(0, annualRate)
   const r = annual / 100 / 12
 
-  const invested = p * n
+  const monthlyPaise = toPaise(p)
+  const investedPaise = monthlyPaise * n
 
-  let maturity: number
-  if (r === 0) {
-    maturity = invested
-  } else {
+  let maturityRupees = investedPaise / 100
+  if (r > 0 && n > 0) {
     const growth = Math.pow(1 + r, n)
-    maturity = p * ((growth - 1) / r) * (1 + r)
+    maturityRupees = p * ((growth - 1) / r) * (1 + r)
   }
+  const maturityPaise = Math.round(maturityRupees * 100)
+  const returnPaise = Math.max(0, maturityPaise - investedPaise)
 
   return {
-    monthly: p,
-    annualRate: annual,
+    monthly: round2(p),
+    annualRate: round2(annual),
     months: n,
-    invested: round2(invested),
-    expectedReturn: round2(maturity - invested),
-    maturityValue: round2(maturity),
+    invested: round2(investedPaise / 100),
+    expectedReturn: round2(returnPaise / 100),
+    maturityValue: round2(maturityPaise / 100),
   }
 }
 

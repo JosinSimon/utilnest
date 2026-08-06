@@ -145,6 +145,13 @@ export default function SipCalculator({ tool }: { tool: ToolDefinition }) {
                   </dd>
                 </div>
               </dl>
+
+              <p className="mt-4 text-xs leading-relaxed text-muted-foreground">
+                Assumes instalments invested at the start of each month and a
+                monthly rate of annual return ÷ 12 for {result.months} months of
+                compounding (Years × 12 + Months). Actual returns are market
+                linked and never guaranteed.
+              </p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">

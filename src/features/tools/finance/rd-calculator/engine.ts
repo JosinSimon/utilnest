@@ -17,15 +17,26 @@ export interface RdResult {
 }
 
 const round2 = (value: number): number => Math.round(value * 100) / 100
+const toPaise = (value: number): number => Math.round(value * 100)
 
 /**
- * Recurring Deposit maturity engine using the standard Indian bank formula.
+ * Recurring Deposit maturity engine using the standard Indian banking formula
+ * (as used by SBI, HDFC, ICICI and India Post):
  *
  *   M = P × ((1 + i)^n − 1) / (1 − (1 + i)^(−1/3))
  *
- * where P is the monthly deposit, i is the interest rate per quarter
- * (annual ÷ 4) and n is the number of quarters. Interest is compounded
- * quarterly while deposits are made monthly.
+ * where P is the monthly deposit, i is the quarterly interest rate
+ * (annual ÷ 4) and n is the number of quarters. A deposit made in the first
+ * month of a quarter earns interest for the whole quarter, the second month
+ * for two-thirds and the third for one-third — which is what the −1/3
+ * exponent in the denominator captures. Because each monthly deposit is
+ * compounded over a fractional number of quarters, n is the exact total
+ * months divided by 3 (not floored), so odd tenures such as 2 years 7 months
+ * compound correctly for all 31 deposits.
+ *
+ * All running amounts are tracked in integer paise — the same exact-arithmetic
+ * approach used by the PPF and GST calculators — so Total Deposited +
+ * Total Interest equals Maturity Value precisely, with no floating-point drift.
  */
 export const calculateRd: CalculatorEngine<RdInput, RdResult> = ({
   monthly,
@@ -40,24 +51,25 @@ export const calculateRd: CalculatorEngine<RdInput, RdResult> = ({
   const annual = Math.max(0, annualRate)
   const i = annual / 100 / 4
 
-  const invested = p * totalMonths
+  const monthlyPaise = toPaise(p)
+  const investedPaise = monthlyPaise * totalMonths
 
-  let maturity = invested
+  let maturityRupees = investedPaise / 100
   if (i > 0 && totalMonths > 0) {
-    const quarters = Math.floor(totalMonths / 3)
-    if (quarters > 0) {
-      const factor = Math.pow(1 + i, quarters)
-      maturity = p * ((factor - 1) / (1 - Math.pow(1 + i, -1 / 3)))
-    }
+    const n = totalMonths / 3
+    const factor = Math.pow(1 + i, n)
+    maturityRupees = p * ((factor - 1) / (1 - Math.pow(1 + i, -1 / 3)))
   }
+  const maturityPaise = Math.round(maturityRupees * 100)
+  const interestPaise = Math.max(0, maturityPaise - investedPaise)
 
   return {
-    monthly: p,
-    annualRate: annual,
+    monthly: round2(p),
+    annualRate: round2(annual),
     months: totalMonths,
-    invested: round2(invested),
-    interest: round2(Math.max(0, maturity - invested)),
-    maturityValue: round2(maturity),
+    invested: round2(investedPaise / 100),
+    interest: round2(interestPaise / 100),
+    maturityValue: round2(maturityPaise / 100),
   }
 }
 

@@ -63,6 +63,11 @@ export const definition: ToolDefinition = {
         "No. Mutual fund returns are market-linked and never guaranteed. The calculator projects future value assuming a constant annual return so you can compare scenarios — actual returns will differ.",
     },
     {
+      question: "How does the calculator compute the maturity value?",
+      answer:
+        "It uses the standard Indian SIP convention: instalments are invested at the start of each month (an annuity due) and the monthly rate is the annual expected return divided by 12. The number of compounding periods is Years × 12 + Months, so a 2-year 7-month SIP compounds for 31 months.",
+    },
+    {
       question: "What is rupee cost averaging?",
       answer:
         "By investing a fixed amount every month you buy more units when prices are low and fewer when they are high, smoothing out the average cost of your investment over time.",
