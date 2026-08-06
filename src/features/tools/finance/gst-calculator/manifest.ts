@@ -77,19 +77,26 @@ export const definition: ToolDefinition = {
   howTo: [
     {
       title: "Enter your amount",
-      description: "Type the amount you want to include or extract GST from.",
+      description: "Type the amount you want to add GST to or extract GST from.",
     },
     {
-      title: "Choose the GST rate",
+      title: "Choose Add GST or Remove GST",
+      description:
+        "Add GST (exclusive) taxes an amount that doesn't include tax. Remove GST (inclusive) finds the tax inside an amount that already includes it.",
+    },
+    {
+      title: "Pick the GST rate",
       description: "Select a standard slab (0%, 3%, 5%, 12%, 18% or 28%) or enter a custom rate.",
     },
     {
-      title: "Select the mode",
-      description: "GST-exclusive adds tax to your amount; GST-inclusive extracts tax already included.",
+      title: "Choose the sale type",
+      description:
+        "Intra-state sales split tax into CGST + SGST. Inter-state sales charge IGST.",
     },
     {
       title: "Read your results",
-      description: "See the total, GST amount, and the CGST/SGST (or IGST) split immediately.",
+      description:
+        "See the amount before GST, the GST charged, the total including GST and the tax split immediately.",
     },
   ],
 
