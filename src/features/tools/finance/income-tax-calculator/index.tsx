@@ -5,7 +5,12 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { SegmentedControl } from "@/components/ui/segmented"
 import { formatINR } from "@/lib/utils"
-import { calculateIncomeTax } from "./engine"
+import {
+  calculateIncomeTax,
+  TAX_YEARS,
+  DEFAULT_FINANCIAL_YEAR,
+} from "./engine"
+import type { FinancialYear } from "./engine"
 
 type Regime = "new" | "old"
 
@@ -14,17 +19,27 @@ const REGIME_LIMITS: Record<Regime, number> = {
   old: 500000,
 }
 
+const FY_LABELS: Record<FinancialYear, string> = {
+  "fy-2026-27": "FY 2026-27",
+}
+
+const FY_OPTIONS = (Object.keys(TAX_YEARS) as FinancialYear[]).map((fy) => ({
+  value: fy,
+  label: FY_LABELS[fy] ?? fy,
+}))
+
 export default function IncomeTaxCalculator({ tool }: { tool: ToolDefinition }) {
   const [income, setIncome] = useState("1200000")
   const [regime, setRegime] = useState<Regime>("new")
   const [deductions, setDeductions] = useState("0")
+  const [fy, setFy] = useState<FinancialYear>(DEFAULT_FINANCIAL_YEAR)
 
   const result = useMemo(() => {
     const i = Number(income)
     const d = Number(deductions)
     if (!Number.isFinite(i) || i < 0 || !Number.isFinite(d) || d < 0) return null
-    return calculateIncomeTax({ annualIncome: i, newRegime: regime === "new", deductions: d })
-  }, [income, regime, deductions])
+    return calculateIncomeTax({ annualIncome: i, newRegime: regime === "new", deductions: d, financialYear: fy })
+  }, [income, regime, deductions, fy])
 
   const zeroTaxUpTo = REGIME_LIMITS[regime]
 
@@ -37,6 +52,16 @@ export default function IncomeTaxCalculator({ tool }: { tool: ToolDefinition }) 
             <span className="size-1.5 rounded-full bg-emerald-500" />
             100% private · in-browser
           </span>
+        </div>
+
+        <div className="mt-5 space-y-2">
+          <Label>Financial year</Label>
+          <SegmentedControl<FinancialYear>
+            name="financial-year"
+            value={fy}
+            onChange={setFy}
+            options={FY_OPTIONS}
+          />
         </div>
 
         <div className="mt-5 space-y-2">
@@ -92,7 +117,7 @@ export default function IncomeTaxCalculator({ tool }: { tool: ToolDefinition }) 
           {result ? (
             <div>
               <div className="flex items-baseline justify-between rounded-lg bg-primary px-4 py-3 text-primary-foreground">
-                <dt className="text-sm font-medium">Total tax (incl. cess)</dt>
+                <dt className="text-sm font-medium">Total tax payable</dt>
                 <dd className="text-2xl font-semibold tabular-nums">
                   {formatINR(result.totalTax)}
                 </dd>
@@ -119,9 +144,9 @@ export default function IncomeTaxCalculator({ tool }: { tool: ToolDefinition }) 
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1 rounded-lg border bg-card p-4">
-                  <dt className="text-xs text-muted-foreground">Tax before rebate</dt>
+                  <dt className="text-xs text-muted-foreground">Income tax (slab)</dt>
                   <dd className="text-lg font-semibold tabular-nums">
-                    {formatINR(result.grossTax)}
+                    {formatINR(result.taxAfterRebate)}
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1 rounded-lg border bg-card p-4">
@@ -131,7 +156,21 @@ export default function IncomeTaxCalculator({ tool }: { tool: ToolDefinition }) 
                   </dd>
                 </div>
                 <div className="flex flex-col gap-1 rounded-lg border bg-card p-4">
-                  <dt className="text-xs text-muted-foreground">Cess (4%)</dt>
+                  <dt className="text-xs text-muted-foreground">
+                    Surcharge {result.surchargeRate > 0 ? `(${Math.round(result.surchargeRate * 100)}%)` : ""}
+                  </dt>
+                  <dd className="text-lg font-semibold tabular-nums">
+                    {formatINR(result.surcharge)}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-1 rounded-lg border bg-card p-4">
+                  <dt className="text-xs text-muted-foreground">Marginal relief</dt>
+                  <dd className="text-lg font-semibold tabular-nums">
+                    {result.marginalRelief > 0 ? `− ${formatINR(result.marginalRelief)}` : formatINR(0)}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-1 rounded-lg border bg-card p-4">
+                  <dt className="text-xs text-muted-foreground">Health & edu. cess (4%)</dt>
                   <dd className="text-lg font-semibold tabular-nums">
                     {formatINR(result.cess)}
                   </dd>

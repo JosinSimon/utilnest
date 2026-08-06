@@ -8,17 +8,21 @@ export const definition: ToolDefinition = {
   path: "finance/income-tax-calculator",
 
   shortDescription:
-    "Estimate your FY 2026-27 income tax under both the new and old regimes — with standard deduction, §87A rebate and 4% cess. Free and 100% private.",
+    "Estimate your FY 2026-27 income tax under both the new & old regimes — slabs, standard deduction, §87A rebate, surcharge, marginal relief and 4% cess. Free and 100% private.",
   longDescription:
-    "Our free income tax calculator estimates your tax liability for FY 2026-27 (AY 2027-28). Enter your annual gross income, choose between the new and old tax regimes, and optionally add your old-regime deductions (80C, 80D, HRA, home loan interest) to instantly see your taxable income, tax before rebate, §87A rebate, 4% cess and the final tax payable. The calculator uses the slabs announced in Budget 2025 and unchanged by Budget 2026. No sign-up, no uploads — everything runs on your device.",
+    "Our free income tax calculator estimates your tax liability for FY 2026-27 (AY 2027-28). Enter your annual gross income, choose between the new and old tax regimes, and optionally add your old-regime deductions (80C, 80D, HRA, home loan interest) to instantly see your taxable income, income tax, §87A rebate, surcharge (from ₹50 lakh), marginal relief, 4% cess and the final tax payable. The calculator uses the slabs announced in Budget 2025 and unchanged by Budget 2026, with surcharge capped at 25% under the new regime. No sign-up, no uploads — everything runs on your device.",
   sections: [
     {
       heading: "New vs old tax regime",
       body: "The new tax regime (the default) offers lower rates and a ₹60,000 §87A rebate that makes income up to ₹12 lakh tax-free, but allows almost no deductions. The old regime has higher rates but lets you claim deductions for investments, insurance, HRA and home loan interest, with a ₹12,500 rebate that makes income up to ₹5 lakh tax-free. Which is cheaper depends on how many deductions you claim.",
     },
     {
+      heading: "Surcharge & marginal relief",
+      body: "On incomes above ₹50 lakh a surcharge applies on top of the slab tax relative to total income — 10% to ₹1 crore, 15% to ₹2 crore, 25% to ₹5 crore and up to 37% above that (capped at 25% in the new regime). Marginal relief ensures that where income only slightly crosses a threshold, the surcharge never creates a sudden jump beyond the extra income. The calculator applies and displays both.",
+    },
+    {
       heading: "Why use our tax calculator?",
-      body: "It computes the full tax pipeline in one place — standard deduction, slab-by-slab tax, rebate, cess and effective rate — for either regime, so you can compare both and plan your deductions before filing.",
+      body: "It computes the full tax pipeline in one place — standard deduction, slab-by-slab tax, rebate, surcharge, marginal relief, cess and effective rate — for either regime, so you can compare both and plan your deductions before filing.",
     },
   ],
 
@@ -75,7 +79,12 @@ export const definition: ToolDefinition = {
     {
       question: "Does the calculator include surcharge?",
       answer:
-        "No. Surcharge applies only to very high incomes (above ₹50 lakh) and is not modeled here. The 4% health and education cess, which applies to everyone, is included.",
+        "Yes. Surcharge applies from income above ₹50 lakh: 10% up to ₹1 crore, 15% up to ₹2 crore, 25% up to ₹5 crore and 37% above ₹5 crore in the old regime — capped at 25% in the new regime. Marginal relief is applied automatically so the surcharge never causes a jump larger than the extra income, and the 4% health and education cess is added on the combined tax and surcharge.",
+    },
+    {
+      question: "What is marginal relief on surcharge?",
+      answer:
+        "When your income is just above a surcharge threshold (₹50 lakh, ₹1 crore, ₹2 crore or ₹5 crore), marginal relief caps the income tax plus surcharge so it cannot exceed the tax at the threshold plus the amount by which your income exceeds it. This stops tax from jumping sharply for a small increase in income.",
     },
   ],
   howTo: [
