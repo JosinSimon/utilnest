@@ -47,7 +47,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["rd", "recurring deposit", "rd maturity", "monthly deposit calculator"],
   searchWeight: 85,
 
-  relatedTools: [],
+  relatedTools: ["fd-calculator", "sip-calculator", "interest-calculator"],
   featured: true,
   trending: false,
   popular: true,

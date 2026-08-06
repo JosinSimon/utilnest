@@ -46,7 +46,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["interest", "compound interest", "simple interest", "ci calculator"],
   searchWeight: 80,
 
-  relatedTools: [],
+  relatedTools: ["emi-calculator", "fd-calculator", "sip-calculator"],
   featured: false,
   trending: false,
   popular: true,

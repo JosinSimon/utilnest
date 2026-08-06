@@ -47,7 +47,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["fd", "fixed deposit", "fd maturity", "deposit calculator"],
   searchWeight: 85,
 
-  relatedTools: [],
+  relatedTools: ["sip-calculator", "rd-calculator", "interest-calculator"],
   featured: true,
   trending: false,
   popular: true,

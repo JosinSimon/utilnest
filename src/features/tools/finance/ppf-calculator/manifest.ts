@@ -46,7 +46,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["ppf", "public provident fund", "ppf maturity", "ppf 80c"],
   searchWeight: 85,
 
-  relatedTools: [],
+  relatedTools: ["sip-calculator", "fd-calculator", "interest-calculator"],
   featured: true,
   trending: false,
   popular: true,

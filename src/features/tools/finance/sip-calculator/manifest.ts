@@ -47,7 +47,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["sip", "mutual fund calculator", "monthly investment calculator"],
   searchWeight: 90,
 
-  relatedTools: [],
+  relatedTools: ["ppf-calculator", "fd-calculator", "interest-calculator"],
   featured: true,
   trending: true,
   popular: true,

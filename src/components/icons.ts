@@ -61,6 +61,7 @@ import {
   Globe,
   Share2,
   House,
+  Gift,
   type LucideIcon,
 } from "lucide-react"
 
@@ -127,6 +128,7 @@ const iconMap: Record<string, LucideIcon> = {
   globe: Globe,
   "share-2": Share2,
   house: House,
+  gift: Gift,
 }
 
 export function getIcon(name: string): LucideIcon {

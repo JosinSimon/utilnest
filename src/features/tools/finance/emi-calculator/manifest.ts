@@ -47,7 +47,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["emi", "loan calculator", "monthly installment", "loan repayment"],
   searchWeight: 95,
 
-  relatedTools: [],
+  relatedTools: ["interest-calculator", "sip-calculator", "fd-calculator"],
   featured: true,
   trending: true,
   popular: true,
