@@ -2,9 +2,17 @@ import { useMemo, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 import { formatINR } from "@/lib/utils"
 import { calculatePpf } from "./engine"
+import { PPF_CONFIG } from "./config"
+
+const TENURE_CHIPS = Array.from(
+  { length: 4 },
+  (_, i) => PPF_CONFIG.lockInYears + PPF_CONFIG.extensionBlockYears * i,
+)
 
 export default function PpfCalculator({ tool }: { tool: ToolDefinition }) {
   const [annual, setAnnual] = useState("150000")
@@ -21,6 +29,8 @@ export default function PpfCalculator({ tool }: { tool: ToolDefinition }) {
     result && result.maturityValue > 0
       ? (result.invested / result.maturityValue) * 100
       : 0
+
+  const depositOverLimit = Number(annual) > PPF_CONFIG.maxDeposit
 
   return (
     <Card className="overflow-hidden">
@@ -40,15 +50,24 @@ export default function PpfCalculator({ tool }: { tool: ToolDefinition }) {
               id="ppf-annual"
               type="number"
               min="0"
+              max={PPF_CONFIG.maxDeposit}
               step="any"
               inputMode="decimal"
               value={annual}
               onChange={(e) => setAnnual(e.target.value)}
-              placeholder="e.g. 150000"
+              placeholder={`e.g. ${PPF_CONFIG.maxDeposit}`}
+              aria-invalid={depositOverLimit}
             />
             <p className="text-[11px] text-muted-foreground">
-              Maximum ₹1,50,000 per financial year.
+              ₹{PPF_CONFIG.minDeposit.toLocaleString("en-IN")} – ₹
+              {PPF_CONFIG.maxDeposit.toLocaleString("en-IN")} per financial year
+              (capped at the maximum).
             </p>
+            {depositOverLimit && (
+              <p className="text-[11px] font-medium text-amber-600">
+                Above the ₹1,50,000 PPF limit — results are capped at the maximum.
+              </p>
+            )}
           </div>
           <div className="space-y-2">
             <Label htmlFor="ppf-years">Duration (years)</Label>
@@ -64,10 +83,41 @@ export default function PpfCalculator({ tool }: { tool: ToolDefinition }) {
               placeholder="e.g. 15"
             />
             <p className="text-[11px] text-muted-foreground">
-              Standard lock-in is 15 years.
+              Standard lock-in is {PPF_CONFIG.lockInYears} years; after maturity
+              you may extend in {PPF_CONFIG.extensionBlockYears}-year blocks.
             </p>
+            <div className="flex flex-wrap gap-2">
+              {TENURE_CHIPS.map((y) => (
+                <Button
+                  key={y}
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className={cn(
+                    "h-7 rounded-full px-3 text-xs",
+                    Number(years) === y && "border-primary bg-primary/10 text-primary",
+                  )}
+                  onClick={() => setYears(String(y))}
+                >
+                  {y} yrs
+                </Button>
+              ))}
+            </div>
           </div>
         </div>
+
+        {result?.warnings.length ? (
+          <div className="mt-4 space-y-1.5">
+            {result.warnings.map((w, i) => (
+              <p
+                key={i}
+                className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700"
+              >
+                {w}
+              </p>
+            ))}
+          </div>
+        ) : null}
 
         <div className="mt-6 rounded-xl border bg-secondary/40 p-5">
           {result && result.years > 0 ? (
@@ -105,9 +155,17 @@ export default function PpfCalculator({ tool }: { tool: ToolDefinition }) {
                 </div>
                 <div className="flex flex-col gap-1 rounded-lg border bg-card p-4">
                   <dt className="text-xs text-muted-foreground">Interest rate</dt>
-                  <dd className="text-lg font-semibold tabular-nums">7.1% / yr</dd>
+                  <dd className="text-lg font-semibold tabular-nums">
+                    {result.annualRate}% / yr
+                  </dd>
                 </div>
               </dl>
+
+              <p className="mt-4 rounded-lg bg-muted/60 px-3 py-2 text-[11px] leading-relaxed text-muted-foreground">
+                Assumes each year&apos;s deposit is made at the start of the
+                financial year (before 5 April), so it earns interest for the full
+                year. PPF interest is credited at the end of each financial year.
+              </p>
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
