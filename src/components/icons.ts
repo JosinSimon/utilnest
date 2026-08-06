@@ -60,6 +60,7 @@ import {
   Phone,
   Globe,
   Share2,
+  House,
   type LucideIcon,
 } from "lucide-react"
 
@@ -125,6 +126,7 @@ const iconMap: Record<string, LucideIcon> = {
   phone: Phone,
   globe: Globe,
   "share-2": Share2,
+  house: House,
 }
 
 export function getIcon(name: string): LucideIcon {
