@@ -161,7 +161,12 @@ export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
                   <dt className="text-xs text-muted-foreground">
                     {interState
                       ? "IGST"
-                      : "Tax split — CGST + SGST (half each)"}
+                      : "Tax split — CGST + SGST"}
+                    {!interState && (
+                      <span className="ml-1 font-normal">
+                        (odd paisa to SGST)
+                      </span>
+                    )}
                   </dt>
                   <dd className="flex flex-wrap gap-x-6 gap-y-1 text-lg font-semibold tabular-nums">
                     {interState ? (

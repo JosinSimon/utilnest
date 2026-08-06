@@ -32,7 +32,7 @@ export const definition: ToolDefinition = {
     {
       title: "GST inclusive",
       input: "Amount ₹11,800 includes 18% GST",
-      output: "Base ₹10,000 · GST ₹1,800",
+      output: "Base ₹10,000 · GST ₹1,800 (CGST ₹900 + SGST ₹900)",
     },
   ],
 
@@ -72,6 +72,11 @@ export const definition: ToolDefinition = {
       question: "Is a 7% or 10% GST rate standard for this calculator service?",
       answer:
         "No. GST is only applied on specified categories and may not always be included even for those services. For items where GST does not apply, set the GST rate to 0%.",
+    },
+    {
+      question: "Why do CGST and SGST sometimes differ by one paisa?",
+      answer:
+        "When the GST amount splits into an uneven half, the odd paisa is allocated to SGST so that CGST + SGST always equals the total GST to the exact paisa. Some systems round each half independently, which can make the two halves sum to one paisa more than the GST itself; we prefer results that always reconcile.",
     },
   ],
   howTo: [
