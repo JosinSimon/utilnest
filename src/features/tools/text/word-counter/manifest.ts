@@ -19,7 +19,7 @@ export const definition: ToolDefinition = {
     },
     {
       heading: "What metrics are included?",
-      body: "Alongside words and characters, you get sentence and paragraph counts, estimated reading time, and a keyword density list showing the most used words — a quick way to check for overused terms in your writing.",
+      body: "Alongside words and characters, you get sentence and paragraph counts, estimated reading time, and a top keywords list showing your most used words — a quick way to check for overused terms in your writing.",
     },
   ],
 

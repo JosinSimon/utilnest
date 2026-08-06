@@ -1,15 +1,8 @@
 import { useMemo, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent } from "@/components/ui/card"
-import { countWords } from "./engine"
+import { countWords, readingTimeLabel } from "./engine"
 import { formatNumber } from "@/lib/utils"
-
-function timeLabel(seconds: number): string {
-  if (seconds < 60) return `${Math.max(1, Math.round(seconds))} sec`
-  const mins = seconds / 60
-  if (mins < 60) return `${mins.toFixed(1)} min`
-  return `${(mins / 60).toFixed(1)} hr`
-}
 
 export default function WordCounter({ tool }: { tool: ToolDefinition }) {
   const [text, setText] = useState("")
@@ -41,58 +34,58 @@ export default function WordCounter({ tool }: { tool: ToolDefinition }) {
           <div className="col-span-2 rounded-xl border bg-primary p-4 text-primary-foreground sm:col-span-1">
             <dt className="text-xs opacity-80">Words</dt>
             <dd className="mt-1 text-3xl font-bold tabular-nums">
-              {formatNumber(result.words, 0)}
+              {formatNumber(result.wordCount, 0)}
             </dd>
             <dd className="text-[11px] opacity-80">only actual words count</dd>
           </div>
           <div className="rounded-xl border bg-secondary/40 p-4">
             <dt className="text-xs text-muted-foreground">Characters</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatNumber(result.characters, 0)}
+              {formatNumber(result.characterCount, 0)}
             </dd>
             <dd className="text-[11px] text-muted-foreground">with spaces</dd>
           </div>
           <div className="rounded-xl border bg-secondary/40 p-4">
             <dt className="text-xs text-muted-foreground">Without spaces</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatNumber(result.charactersNoSpaces, 0)}
+              {formatNumber(result.characterCountWithoutSpaces, 0)}
             </dd>
             <dd className="text-[11px] text-muted-foreground">excluding spaces</dd>
           </div>
           <div className="rounded-xl border bg-secondary/40 p-4">
             <dt className="text-xs text-muted-foreground">Sentences</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatNumber(result.sentences, 0)}
+              {formatNumber(result.sentenceCount, 0)}
             </dd>
             <dd className="text-[11px] text-muted-foreground">split on . ! ?</dd>
           </div>
           <div className="rounded-xl border bg-secondary/40 p-4">
             <dt className="text-xs text-muted-foreground">Paragraphs</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">
-              {formatNumber(result.paragraphs, 0)}
+              {formatNumber(result.paragraphCount, 0)}
             </dd>
             <dd className="text-[11px] text-muted-foreground">blank-line separated</dd>
           </div>
           <div className="rounded-xl border bg-secondary/40 p-4">
             <dt className="text-xs text-muted-foreground">Read time</dt>
             <dd className="mt-1 text-2xl font-semibold tabular-nums">
-              {timeLabel(result.readingTime)}
+              {readingTimeLabel(result.readingTimeSeconds)}
             </dd>
             <dd className="text-[11px] text-muted-foreground">~200 wpm</dd>
           </div>
         </dl>
 
-        {result.words === 0 && text.trim() !== "" ? (
+        {result.wordCount === 0 && text.trim() !== "" ? (
           <p className="mt-4 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-700">
             Symbols, dashes and emojis are not counted as words.
           </p>
         ) : null}
 
-        {result.density.length > 0 && (
+        {result.topKeywords.length > 0 && (
           <div className="mt-5">
             <p className="text-sm font-medium">Top keywords</p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {result.density.map((d) => (
+              {result.topKeywords.map((d) => (
                 <span
                   key={d.word}
                   className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-medium"
