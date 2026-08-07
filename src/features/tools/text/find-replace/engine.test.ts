@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { findReplace, type FindReplaceInput } from "./engine"
+import { findReplace, buildMatcher, matchSegments, type FindReplaceInput } from "./engine"
 
 const base: FindReplaceInput = {
   text: "",
@@ -68,5 +68,54 @@ describe("find-replace engine", () => {
     const r = findReplace({ ...base, text: "", find: "a", replace: "b" })
     expect(r.output).toBe("")
     expect(r.matches).toBe(0)
+  })
+
+  describe("matchSegments", () => {
+    it("returns a single non-matched segment when find is empty", () => {
+      expect(matchSegments("abc", "", false, false)).toEqual([{ text: "abc", matched: false }])
+    })
+
+    it("marks exact-case matches only when case-sensitive", () => {
+      const segs = matchSegments("Indian indian", "Indian", true, false)
+      expect(segs).toEqual([
+        { text: "Indian", matched: true },
+        { text: " indian", matched: false },
+      ])
+    })
+
+    it("marks all case variants when case-insensitive", () => {
+      const segs = matchSegments("Indian indian INDIAN", "indian", false, false)
+      expect(segs.filter((s) => s.matched).map((s) => s.text)).toEqual([
+        "Indian",
+        "indian",
+        "INDIAN",
+      ])
+    })
+
+    it("respects whole-word boundaries", () => {
+      const segs = matchSegments("cat catalog", "cat", false, true)
+      expect(segs.filter((s) => s.matched).map((s) => s.text)).toEqual(["cat"])
+    })
+  })
+
+  describe("buildMatcher", () => {
+    it("returns null for empty find", () => {
+      expect(buildMatcher("", false, false)).toBeNull()
+    })
+
+    it("builds a case-insensitive global regex by default", () => {
+      const re = buildMatcher("fox", false, false)!
+      expect("Fox FOX fox".match(re)).toHaveLength(3)
+    })
+
+    it("builds a case-sensitive global regex", () => {
+      const re = buildMatcher("fox", true, false)!
+      expect("Fox FOX fox".match(re)).toHaveLength(1)
+    })
+
+    it("builds a whole-word regex", () => {
+      const re = buildMatcher("cat", false, true)!
+      expect("cat catalog".match(re)).toHaveLength(1)
+    })
   })
 })

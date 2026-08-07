@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent } from "@/components/ui/card"
-import { findReplace } from "./engine"
+import { findReplace, matchSegments } from "./engine"
 import { copyToClipboard, cn } from "@/lib/utils"
 
 function Toggle({
@@ -14,15 +14,17 @@ function Toggle({
   label: string
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2">
-      <button
-        type="button"
-        role="switch"
-        aria-checked={checked}
-        onClick={onChange}
+    <button
+      type="button"
+      role="switch"
+      aria-checked={checked}
+      onClick={onChange}
+      className="group flex cursor-pointer items-center gap-2"
+    >
+      <span
         className={cn(
-          "relative h-5 w-9 rounded-full border border-input transition-colors",
-          checked ? "bg-primary" : "bg-secondary",
+          "relative h-5 w-9 rounded-full border transition-colors",
+          checked ? "border-primary bg-primary" : "border-input bg-secondary",
         )}
       >
         <span
@@ -31,9 +33,24 @@ function Toggle({
             checked && "translate-x-4",
           )}
         />
-      </button>
-      <span className="text-xs font-medium">{label}</span>
-    </label>
+      </span>
+      <span
+        className={cn(
+          "text-xs font-semibold",
+          checked ? "text-foreground" : "text-muted-foreground",
+        )}
+      >
+        {label}
+      </span>
+      <span
+        className={cn(
+          "rounded px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide",
+          checked ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground",
+        )}
+      >
+        {checked ? "On" : "Off"}
+      </span>
+    </button>
   )
 }
 
@@ -48,6 +65,11 @@ export default function FindReplace({ tool }: { tool: ToolDefinition }) {
   const { output, matches } = useMemo(
     () => findReplace({ text, find, replace, caseSensitive, wholeWord }),
     [text, find, replace, caseSensitive, wholeWord],
+  )
+
+  const segments = useMemo(
+    () => matchSegments(text, find, caseSensitive, wholeWord),
+    [text, find, caseSensitive, wholeWord],
   )
 
   const onCopy = async () => {
@@ -113,11 +135,47 @@ export default function FindReplace({ tool }: { tool: ToolDefinition }) {
           />
         </div>
 
+        {find && text && (
+          <div className="mt-5 rounded-xl border p-4">
+            <p className="text-sm font-medium text-muted-foreground">
+              What will be replaced
+            </p>
+            <p className="mt-2 whitespace-pre-wrap break-words text-sm leading-relaxed">
+              {segments.map((seg, i) =>
+                seg.matched ? (
+                  <mark key={i} className="rounded bg-yellow-200 px-0.5 text-foreground">
+                    {seg.text}
+                  </mark>
+                ) : (
+                  <span key={i}>{seg.text}</span>
+                ),
+              )}
+              {matches === 0 && (
+                <span className="text-muted-foreground">No matches with the current settings.</span>
+              )}
+            </p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Highlights show exactly which words match now.{" "}
+              {caseSensitive
+                ? "Case sensitive is ON — only exact-case matches are highlighted."
+                : "Case sensitive is OFF — all case variants match."}{" "}
+              {wholeWord ? "Whole word only is ON." : "Whole word only is OFF."}
+            </p>
+          </div>
+        )}
+
         <div className="mt-5 rounded-xl border bg-secondary/40 p-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-medium">
               Result
-              {find && <span className="ml-2 text-xs text-muted-foreground">({matches} replaced)</span>}
+              {find && (
+                <span
+                  className="ml-2 rounded bg-primary/10 px-2 py-0.5 text-xs font-bold tabular-nums text-primary"
+                  aria-live="polite"
+                >
+                  {matches} {matches === 1 ? "match" : "matches"}
+                </span>
+              )}
             </p>
             <button
               type="button"
