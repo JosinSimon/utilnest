@@ -99,3 +99,40 @@ test("image-cropper crops a square image using the 1:1 preset", async ({ page })
   const panel = await page.locator(".space-y-3.rounded-lg").last().innerText()
   expect(panel).toContain("File size")
 })
+
+test("image-dpi-converter changes DPI metadata and downloads", async ({ page }) => {
+  const dataUrl = await makeJpegDataUrl(page, 640, 480)
+  await page.goto("/category/image/image-dpi-converter")
+  await page.getByRole("heading", { level: 1, name: "DPI Converter", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "photo.jpg")
+  await page.getByRole("button", { name: "600 DPI", exact: true }).click()
+  await page.getByRole("button", { name: "Set DPI & download" }).click()
+
+  await page.getByRole("button", { name: "Download", exact: true }).waitFor()
+  const panel = await page.locator(".space-y-3.rounded-lg").last().innerText()
+  expect(panel).toContain("600 DPI")
+})
+
+test("image-watermark adds text and downloads", async ({ page }) => {
+  const dataUrl = await makeJpegDataUrl(page, 640, 480)
+  await page.goto("/category/image/image-watermark")
+  await page.getByRole("heading", { name: "Image Watermark", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "photo.jpg")
+  await page.getByLabel("Watermark text").fill("© 2026 Example")
+  await page.getByRole("button", { name: "Apply watermark" }).click()
+
+  await page.getByRole("button", { name: "Download", exact: true }).waitFor()
+})
+
+test("dimensions-checker reads image width and height", async ({ page }) => {
+  const dataUrl = await makeJpegDataUrl(page, 1200, 800)
+  await page.goto("/category/image/dimensions-checker")
+  await page.getByRole("heading", { name: "Image Dimensions Checker", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "photo.jpg")
+  const panel = page.locator(".space-y-3.rounded-lg").last()
+  await panel.getByText("1200 × 800 px").waitFor()
+  expect(await panel.innerText()).toContain("Aspect ratio")
+})
