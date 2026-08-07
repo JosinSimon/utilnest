@@ -25,18 +25,18 @@ Future text ideas: Markdown preview, Lorem Ipsum, keyword density, diff view.
 
 | # | Tool | Status |
 |---|------|--------|
-| 1 | Govt Form Image Resizer (SSC / UPSC / PSC / IBPS) | ⏳ |
-| 2 | Passport Photo Maker | ⏳ |
-| 3 | Signature Resizer | ⏳ |
+| 1 | Govt Form Image Resizer (SSC / UPSC / PSC / IBPS) | ✅ Preset pipeline live |
+| 2 | Passport Photo Maker | ✅ 3.5×3.5 cm @ DPI, white-bg warning |
+| 3 | Signature Resizer | ✅ SSC / NEET / IBPS signature presets |
 | 4 | Compress Image to 20 / 50 / 100 KB | ✅ Engine + 2 tools live (Vitest 41, Playwright 3) |
 | 5 | Resize Image to Exact Pixels | ✅ Same engine shares pipeline |
-| 6 | Exam Presets (NEET / JEE / SSC) | ⏳ Engine presets (SSC CGL / NEET UG / IBPS, verified:false) |
-| 7 | Aadhaar / PAN Resizer | ⏳ |
-| 8 | Document Scanner | ⏳ PDF lives here, not in engine |
-| 9 | Exam Preset: SSC CGL & others | ⏳ |
+| 6 | Exam Presets (NEET / JEE / SSC) | ✅ Preset picker (photo) — verified:false until official |
+| 7 | Aadhaar / PAN Resizer | ✅ 3.5cm-based presets — verified:false |
+| 8 | Document Scanner | ✅ Image→PDF via pdf-lib (lives in tool, not engine) |
+| 9 | Exam Preset: SSC CGL & others | ⏳ merged into #1/#6 |
 | 10 | (reserve) | ⏳ |
 
-Phase 2a notes: shared `shared/image` engine (geometry/specs/validator/metadata/encoder/compressor) + impure `driver.ts`. Government presets always `allowDownscale:false` (never silently shrink to fit) and report `cannotHitTarget`/`cannotHitMin` honestly. `/verify` specs only after official-source validation.
+Phase 2a notes: shared `shared/image` engine (geometry/specs/validator/metadata/encoder/compressor/presetPipeline) + impure `driver.ts`. Government presets always `allowDownscale:false` (never silently shrink to fit) and report `cannotHitTarget`/`cannotHitMin` honestly. `/verify` specs only after official-source validation. Passport/Aadhaar/PAN presets are cm-dimensioned, resolved to px at a user-selectable DPI (default 300).
 
 ## Category: Image (10 tools)
 

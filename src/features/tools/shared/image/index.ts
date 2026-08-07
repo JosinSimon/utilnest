@@ -10,6 +10,7 @@ export * from "./metadata"
 export * from "./encoder"
 export * from "./validator"
 export * from "./compressor"
+export * from "./presetPipeline"
 // driver exports `detectFormat` and others that may overlap nothing else
 export * from "./driver"
 export type { DriverRender, DecodedImage } from "./driver"
