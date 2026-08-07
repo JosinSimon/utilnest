@@ -28,13 +28,15 @@ Future text ideas: Markdown preview, Lorem Ipsum, keyword density, diff view.
 | 1 | Govt Form Image Resizer (SSC / UPSC / PSC / IBPS) | ⏳ |
 | 2 | Passport Photo Maker | ⏳ |
 | 3 | Signature Resizer | ⏳ |
-| 4 | Compress Image to 20 / 50 / 100 KB | ⏳ |
-| 5 | Resize Image to Exact Pixels | ⏳ |
-| 6 | Exam Presets (NEET / JEE / SSC) | ⏳ |
+| 4 | Compress Image to 20 / 50 / 100 KB | ✅ Engine + 2 tools live (Vitest 41, Playwright 3) |
+| 5 | Resize Image to Exact Pixels | ✅ Same engine shares pipeline |
+| 6 | Exam Presets (NEET / JEE / SSC) | ⏳ Engine presets (SSC CGL / NEET UG / IBPS, verified:false) |
 | 7 | Aadhaar / PAN Resizer | ⏳ |
-| 8 | Document Scanner | ⏳ |
+| 8 | Document Scanner | ⏳ PDF lives here, not in engine |
 | 9 | Exam Preset: SSC CGL & others | ⏳ |
 | 10 | (reserve) | ⏳ |
+
+Phase 2a notes: shared `shared/image` engine (geometry/specs/validator/metadata/encoder/compressor) + impure `driver.ts`. Government presets always `allowDownscale:false` (never silently shrink to fit) and report `cannotHitTarget`/`cannotHitMin` honestly. `/verify` specs only after official-source validation.
 
 ## Category: Image (10 tools)
 
