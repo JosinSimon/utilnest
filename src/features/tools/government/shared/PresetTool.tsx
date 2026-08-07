@@ -55,7 +55,6 @@ export function PresetTool({ tool, scope, defaultDpi = 300 }: PresetToolProps) {
   const [result, setResult] = useState<Awaited<ReturnType<typeof runPresetPipeline>> | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const [dpi, setDpi] = useState(defaultDpi)
   const previewRef = useRef<string | null>(null)
 
   const preset = getPresetById(selectedId) ?? presets[0]
@@ -83,17 +82,18 @@ export function PresetTool({ tool, scope, defaultDpi = 300 }: PresetToolProps) {
     setError(null)
     setResult(null)
     try {
-      const res = await runPresetPipeline({ file, preset, dpi })
+      const res = await runPresetPipeline({ file, preset, dpi: defaultDpi })
       setResult(res)
-      if (!res.compliant) {
-        setError("The output does not satisfy the selected specification.")
-      }
+      setError(res.compliant ? null : "The output does not satisfy the selected specification.")
     } catch (err) {
-      setError((err as Error).message)
+      const message =
+        (err as Error)?.message?.trim() ||
+        "Something went wrong while processing your image. Try a smaller JPEG or PNG."
+      setError(message)
     } finally {
       setRunning(false)
     }
-  }, [file, preset, dpi])
+  }, [file, preset, defaultDpi])
 
   const download = useCallback(() => {
     if (!result) return
@@ -105,8 +105,6 @@ export function PresetTool({ tool, scope, defaultDpi = 300 }: PresetToolProps) {
     a.click()
     URL.revokeObjectURL(url)
   }, [result, preset])
-
-  const needsDpi = preset?.dimensions.unit !== "px"
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -157,7 +155,7 @@ export function PresetTool({ tool, scope, defaultDpi = 300 }: PresetToolProps) {
               <dl className="grid grid-cols-2 gap-2">
                 <span className="text-muted-foreground">Dimensions</span>
                 <span>
-                  {needsDpi
+                  {preset.dimensions.unit === "cm"
                     ? `${preset.dimensions.width}×${preset.dimensions.height} ${preset.dimensions.unit}`
                     : `${preset.dimensions.width}×${preset.dimensions.height} px`}
                 </span>
@@ -175,25 +173,12 @@ export function PresetTool({ tool, scope, defaultDpi = 300 }: PresetToolProps) {
             </div>
           )}
 
-          {needsDpi && (
-            <div className="space-y-1.5">
-              <Label htmlFor="dpi">DPI (for cm/mm dimensions)</Label>
-              <input
-                id="dpi"
-                className="flex h-10 w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm"
-                type="number"
-                min={96}
-                max={1200}
-                value={dpi}
-                onChange={(e) => setDpi(Number(e.target.value))}
-              />
-              {preset && (
-                <p className="text-xs text-muted-foreground">
-                  Renders to ≈ {presetPixels(preset, dpi).width}×{presetPixels(preset, dpi).height} px
-                </p>
-              )}
-            </div>
-          )}
+          {preset.dimensions.unit === "cm" && (
+        <p className="text-xs text-muted-foreground">
+          Renders to ≈ {presetPixels(preset, defaultDpi).width}×{presetPixels(preset, defaultDpi).height}{" "}
+          px for print
+        </p>
+      )}
 
           <div>
             <input

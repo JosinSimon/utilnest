@@ -48,8 +48,8 @@ test("passport-photo-maker defaults to 3.5x3.5 cm at 300 dpi (~413px)", async ({
   await page.goto("/category/government/passport-photo-maker")
   await page.getByRole("heading", { name: "Passport Photo Maker", exact: true }).waitFor()
 
-  // DPI input is shown for cm-dimension presets.
-  await page.getByLabel("DPI (for cm/mm dimensions)").waitFor()
+  // The "renders to ~413px" note is shown for the cm-dimension preset (no DPI input).
+  await page.getByText(/Renders to ≈ 413×413 px/).waitFor()
   await page.setInputFiles('input[type="file"]', {
     name: "photo.jpg",
     mimeType,
