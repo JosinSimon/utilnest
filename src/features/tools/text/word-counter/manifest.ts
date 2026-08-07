@@ -48,7 +48,7 @@ export const definition: ToolDefinition = {
   searchAliases: ["wc", "word count", "char counter", "count words"],
   searchWeight: 90,
 
-  relatedTools: [],
+  relatedTools: ["character-counter", "line-counter", "case-converter"],
   featured: true,
   trending: false,
   popular: true,
