@@ -36,7 +36,7 @@ Future text ideas: Markdown preview, Lorem Ipsum, keyword density, diff view.
 | 9 | Exam Preset: SSC CGL & others | ⏳ merged into #1/#6 |
 | 10 | (reserve) | ⏳ |
 
-Phase 2a notes: shared `shared/image` engine (geometry/specs/validator/metadata/encoder/compressor/presetPipeline) + impure `driver.ts`. Government presets always `allowDownscale:false` (never silently shrink to fit) and report `cannotHitTarget`/`cannotHitMin` honestly. `/verify` specs only after official-source validation. Passport/Aadhaar/PAN presets are cm-dimensioned, resolved to px at a user-selectable DPI (default 300).
+Phase 2 notes: shared `shared/image` engine (geometry/specs/validator/metadata/encoder/compressor/presetPipeline) + impure `driver.ts`. Government presets always `allowDownscale:false` (never silently shrink to fit) and report `cannotHitTarget`/`cannotHitMin` honestly. `/verify` specs only after official-source validation. Passport/Aadhaar/PAN presets are cm-dimensioned, resolved to px at a fixed sensible DPI (300); DPI is hidden from the UI. NEET UG + IBPS presets verified against official sources (`lastVerified` in `specs.ts`, log in `VERIFICATION.md`); SSC unverified (photo now live-capture only). Tool scopes are disjoint so no preset appears in two tools.
 
 ## Category: Image (10 tools)
 
@@ -75,6 +75,6 @@ Future PDF ideas: OCR for scanned documents.
 ## Status
 
 - **Phase 1 (Text):** ✅ 10/10 tools live, 278 total tests passing, typecheck + lint + build green.
-- **Phase 2 (Government Forms):** next.
+- **Phase 2 (Government Forms):** ✅ 8/8 tools live, 342 unit tests + 6 browser (Playwright) tests passing, tsc + lint + build green. NEET/IBPS presets verified; SSC/Pan/Aadhaar/passport await official confirmation (backlog).
 - **Phase 3 (Image):** after Government.
 - **Phase 4 (PDF):** after Image.
