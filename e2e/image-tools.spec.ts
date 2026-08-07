@@ -71,3 +71,31 @@ test("image-base64 encodes a PNG to a data URL and decodes it back", async ({ pa
 
   await page.getByRole("button", { name: /Download decoded-image.jpg/ }).waitFor()
 })
+test("image-converter converts an image to PNG at reduced size", async ({ page }) => {
+  const dataUrl = await makeJpegDataUrl(page, 600, 600)
+  await page.goto("/category/image/image-converter")
+  await page.getByRole("heading", { name: "Image Converter (JPG / PNG / WebP)", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "photo.jpg")
+  await page.getByRole("radio", { name: "PNG lossless" }).click()
+  await page.getByRole("button", { name: "Convert to PNG" }).click()
+
+  await page.getByRole("button", { name: /Download photo\.png/ }).waitFor()
+})
+
+test("image-cropper crops a square image using the 1:1 preset", async ({ page }) => {
+  const dataUrl = await makeJpegDataUrl(page, 800, 800)
+  await page.goto("/category/image/image-cropper")
+  await page.getByRole("heading", { name: "Image Cropper", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "square.jpg")
+  // Wait for the crop box overlay to render.
+  await page.locator(".absolute.border-2").first().waitFor()
+
+  await page.getByRole("button", { name: "1:1", exact: true }).click()
+  await page.getByRole("button", { name: "Crop & save" }).click()
+
+  await page.getByRole("button", { name: "Download", exact: true }).waitFor()
+  const panel = await page.locator(".space-y-3.rounded-lg").last().innerText()
+  expect(panel).toContain("File size")
+})

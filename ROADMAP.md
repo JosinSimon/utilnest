@@ -44,8 +44,8 @@ Phase 2 notes: shared `shared/image` engine (geometry/specs/validator/metadata/e
 |---|------|--------|
 | 1 | Image Compressor | ✅ KB presets (20/50/100/200/500) via shared binary-search engine |
 | 2 | Image Resizer | ✅ exact px, aspect preserved, JPEG/PNG |
-| 3 | Image Cropper | ⏳ |
-| 4 | JPG ↔ PNG ↔ WebP Converter | ⏳ |
+| 3 | Image Cropper | ✅ draggable box + aspect presets (1:1, 4:3, 3:2, 16:9), JPG/PNG |
+| 4 | JPG ⇔ PNG ⇔ WebP Converter | ✅ quality slider, all three formats |
 | 5 | DPI Converter (72 / 150 / 200 / 300) | ⏳ |
 | 6 | Background Remover (API / local later) | ⏳ |
 | 7 | Image ↔ Base64 | ✅ encode image→data URL, decode base64→file with mime sniffing |
@@ -76,5 +76,5 @@ Future PDF ideas: OCR for scanned documents.
 
 - **Phase 1 (Text):** ✅ 10/10 tools live, 278 total tests passing, typecheck + lint + build green.
 - **Phase 2 (Government Forms):** ✅ 8/8 tools live, 342 unit tests + 6 browser (Playwright) tests passing, tsc + lint + build green. NEET/IBPS presets verified; SSC/Pan/Aadhaar/passport await official confirmation (backlog).
-- **Phase 3 (Image):** 🚧 3/10 tools live (Image Compressor, Image Resizer, Image ↔ Base64). Reuses the Phase 2 shared `shared/image` engine. Next up: Image Cropper → JPG/PNG/WebP Converter.
+- **Phase 3 (Image):** 🚧 5/10 tools live (Compressor, Resizer, Cropper, JPG/PNG/WebP Converter, Image↔Base64). Reuses the Phase 2 shared `shared/image` engine. Remaining: DPI converter, watermark, dimensions checker, background remover (heavy).
 - **Phase 4 (PDF):** after Image.
