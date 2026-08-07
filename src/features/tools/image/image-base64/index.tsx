@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { SegmentedControl } from "@/components/ui/segmented"
 import { Label } from "@/components/ui/label"
 import { formatBytes } from "@/lib/utils"
-import { encodeImage, decodeBase64 } from "./engine"
+import { encodeImage, decodeBase64, MAX_ENCODE_BYTES } from "./engine"
 import type { Base64Mode } from "./engine"
 
 export default function ImageBase64({ tool }: { tool: ToolDefinition }) {
@@ -38,6 +38,12 @@ export default function ImageBase64({ tool }: { tool: ToolDefinition }) {
     setOutput("")
     try {
       const bytes = new Uint8Array(await file.arrayBuffer())
+      if (bytes.length > MAX_ENCODE_BYTES) {
+        setError(
+          `Image is ${(bytes.length / (1024 * 1024)).toFixed(1)} MB — over the 2 MB limit. Base64 output runs about a third larger than the file, so huge images can freeze your browser. Compress the image first.`,
+        )
+        return
+      }
       const res = encodeImage(bytes, file.type || "image/jpeg")
       setOutput(res.dataUrl)
     } catch (err) {
@@ -112,11 +118,21 @@ export default function ImageBase64({ tool }: { tool: ToolDefinition }) {
                 </Button>
                 {file && (
                   <p className="mt-2 text-xs text-muted-foreground">
-                    {file.name} · {formatBytes(file.size)}
+                    {file.name} · {formatBytes(file.size)} ·{" "}
+                    {file.size > MAX_ENCODE_BYTES ? (
+                      <span className="text-amber-700">over the 2 MB limit</span>
+                    ) : (
+                      "OK to encode"
+                    )}
                   </p>
                 )}
               </div>
-              <Button type="button" onClick={doEncode} disabled={!file} className="w-full">
+              <Button
+                type="button"
+                onClick={doEncode}
+                disabled={!file || file.size > MAX_ENCODE_BYTES}
+                className="w-full"
+              >
                 Encode to Base64
               </Button>
               {output && (

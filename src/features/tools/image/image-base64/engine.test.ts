@@ -7,6 +7,7 @@ import {
   encodeImage,
   decodeBase64,
   guessFileName,
+  MAX_ENCODE_BYTES,
 } from "./engine"
 
 describe("bytesToDataUrl", () => {
@@ -58,6 +59,26 @@ describe("sniffMime", () => {
 
   it("falls back to octet-stream for unknown bytes", () => {
     expect(sniffMime(new Uint8Array([1, 2, 3]))).toBe("application/octet-stream")
+  })
+})
+
+describe("size limits", () => {
+  it("throws when encoding exceeds the 2 MB cap", () => {
+    const big = new Uint8Array(MAX_ENCODE_BYTES + 1)
+    expect(() => encodeImage(big, "image/png")).toThrow(/too large/i)
+  })
+
+  it("encodes exactly at the cap", () => {
+    const bytes = new Uint8Array(MAX_ENCODE_BYTES)
+    const res = encodeImage(bytes, "image/png")
+    expect(res.bytes).toBe(MAX_ENCODE_BYTES)
+    expect(res.base64.length).toBeGreaterThan(0)
+  })
+
+  it("throws when the decoded output exceeds the cap", () => {
+    const big = new Uint8Array(9 * 1024 * 1024) // 9 MB > 8 MB cap
+    const url = bytesToDataUrl(big, "image/png")
+    expect(() => decodeBase64(url)).toThrow(/too large/i)
   })
 })
 

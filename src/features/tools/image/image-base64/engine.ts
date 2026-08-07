@@ -1,5 +1,10 @@
 export type Base64Mode = "encode" | "decode"
 
+/** Hard cap for encoding — the resulting data URL is ~4/3 the file size. */
+export const MAX_ENCODE_BYTES = 2 * 1024 * 1024 // 2 MB
+/** Hard cap for the decoded output file size. */
+export const MAX_DECODE_BYTES = 8 * 1024 * 1024 // 8 MB
+
 /** Result for encode: the data URL (base64) plus camel metadata. */
 export interface EncodeOutcome {
   mode: "encode"
@@ -89,6 +94,11 @@ export function encodeImage(
   bytes: Uint8Array,
   mime: string,
 ): { mode: "encode"; dataUrl: string; base64: string; mime: string; bytes: number } {
+  if (bytes.length > MAX_ENCODE_BYTES) {
+    throw new Error(
+      `Image is ${(bytes.length / (1024 * 1024)).toFixed(1)} MB — too large to encode. Keep it under 2 MB, as Base64 output is about a third larger than the file.`,
+    )
+  }
   const dataUrl = bytesToDataUrl(bytes, mime)
   const base64 = dataUrl.split(",")[1] ?? ""
   return { mode: "encode", dataUrl, base64, mime: mime || "image/jpeg", bytes: bytes.length }
@@ -101,6 +111,11 @@ export function decodeBase64(
   const { mime: parsedMime, base64 } = parseDataUrl(text)
   const bytes = base64ToBytes(base64)
   if (bytes.length === 0) throw new Error("No base64 data found. Paste a valid data URL or base64 string.")
+  if (bytes.length > MAX_DECODE_BYTES) {
+    throw new Error(
+      `Decoded image would be ${(bytes.length / (1024 * 1024)).toFixed(1)} MB — too large to preview reliably. Files up to 8 MB are supported.`,
+    )
+  }
   const mime = parsedMime || sniffMime(bytes)
   const part = new Uint8Array(bytes)
   return { mode: "decode", blob: new Blob([part], { type: mime }), mime, fileName: guessFileName(mime), bytes: bytes.length }
