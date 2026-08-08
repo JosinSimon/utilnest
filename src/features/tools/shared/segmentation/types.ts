@@ -39,6 +39,8 @@ export interface SolidOptions {
   featherRadius?: number
   /** Fill small enclosed holes inside the subject. */
   fillHoles?: boolean
+  /** Drop isolated foreground islands smaller than this many px (true = default). */
+  removeIslands?: number | boolean
   /** Pixels with alpha below this (0..255) are always treated as background. */
   minAlphaKeep?: number
   /** Optional max work pixels before the solid matcher downscales. */

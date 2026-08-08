@@ -61,7 +61,56 @@ export function dilateMask(mask: AlphaMask, size: Size, radius = 1): AlphaMask {
 }
 
 /**
- * Gaussian-ish edge smoothing: blur the binary mask then clip to 0..255.
+ * Remove tiny isolated foreground specks (JPEG compression noise, camera
+ * sensor blotches) that survive the flood fill as disconnected islands.
+ * A connected foreground component with area below `minArea` pixels is
+ * converted to background, which keeps the subject untouched while cleaning
+ * up the "scattered dots" effect on transparent / replace / blur outputs.
+ * `minArea` = refineSmall: raw px; otherwise a fraction of the image.
+ */
+export function removeSmallIslands(mask: AlphaMask, size: Size, minArea?: number): AlphaMask {
+  const { width, height } = size
+  const n = width * height
+  const area = minArea ?? Math.max(4, Math.round(n * 0.0006))
+  const out = new Uint8Array(mask)
+  const visited = new Uint8Array(n)
+
+  for (let start = 0; start < n; start++) {
+    if (visited[start] || mask[start] < 128) continue
+    // BFS the component.
+    const comp: number[] = []
+    const stack = [start]
+    visited[start] = 1
+    while (stack.length > 0) {
+      const i = stack.pop()!
+      comp.push(i)
+      const y = (i / width) | 0
+      const x = i - y * width
+      if (x > 0 && !visited[i - 1] && mask[i - 1] >= 128) {
+        visited[i - 1] = 1
+        stack.push(i - 1)
+      }
+      if (x < width - 1 && !visited[i + 1] && mask[i + 1] >= 128) {
+        visited[i + 1] = 1
+        stack.push(i + 1)
+      }
+      if (y > 0 && !visited[i - width] && mask[i - width] >= 128) {
+        visited[i - width] = 1
+        stack.push(i - width)
+      }
+      if (y < height - 1 && !visited[i + width] && mask[i + width] >= 128) {
+        visited[i + width] = 1
+        stack.push(i + width)
+      }
+    }
+    if (comp.length < area) {
+      for (const idx of comp) out[idx] = 0
+    }
+  }
+  return out
+}
+
+/** Gaussian-ish edge smoothing: blur the binary mask then clip to 0..255.
  * This produces the soft "2px of feathering" every good cutout has.
  * Uses two passes of a box blur (radius px) which is fast and stable.
  */

@@ -174,3 +174,49 @@ test("background-remover strips a solid background and downloads transparent PNG
   expect(panel).toContain("File size")
   expect(panel).toContain("640 × 480 px")
 })
+
+async function sampleResultPixel(page: Page, xFrac: number, yFrac: number): Promise<[number, number, number, number]> {
+  return page.evaluate(
+    ({ fx, fy }) => {
+      const img: HTMLImageElement | null = document.querySelector('img[alt="Result preview"]')
+      if (!img) throw new Error("no result preview")
+      const canvas = document.createElement("canvas")
+      const scale = Math.min(200 / img.naturalWidth, 200 / img.naturalHeight)
+      canvas.width = Math.round(img.naturalWidth * scale)
+      canvas.height = Math.round(img.naturalHeight * scale)
+      const ctx = canvas.getContext("2d")!
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      const d = ctx.getImageData(Math.round(canvas.width * fx), Math.round(canvas.height * fy), 1, 1).data
+      return [d[0], d[1], d[2], d[3]]
+    },
+    { fx: xFrac, fy: yFrac },
+  )
+}
+
+test("background-remover replace mode paints a clean uniform backdrop with no specks", async ({ page }) => {
+  const dataUrl = await makeSubjectJpegDataUrl(page, 640, 480)
+  await page.goto("/category/image/background-remover")
+  await page.getByRole("heading", { name: "Background Remover", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "subject.jpg")
+  await page.getByRole("radio", { name: "Replace solid color" }).click()
+  // Pick a bright, unmistakable replacement color (React-friendly setter).
+  await page.locator('#replace-color').evaluate((el) => {
+    const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set
+    setter.call(el, "#ff0000")
+    el.dispatchEvent(new Event("input", { bubbles: true }))
+    el.dispatchEvent(new Event("change", { bubbles: true }))
+  })
+  await page.getByRole("button", { name: "Remove background" }).click()
+  await page.getByRole("button", { name: "Download", exact: true }).waitFor()
+
+  // A background corner should be pure red, and the centre keeps the subject.
+  const corner = await sampleResultPixel(page, 0.05, 0.05)
+  const center = await sampleResultPixel(page, 0.5, 0.5)
+  // Red: R is high, G and B are near 0.
+  expect(corner[0]).toBeGreaterThan(150)
+  expect(corner[1]).toBeLessThan(60)
+  expect(corner[2]).toBeLessThan(60)
+  // Subject (dark navy) still dominates the middle.
+  expect(center[0]).toBeLessThan(corner[0] - 50)
+})

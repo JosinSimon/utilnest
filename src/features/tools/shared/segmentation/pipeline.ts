@@ -8,7 +8,7 @@ import type {
 } from "./types"
 import { analyzeBorder } from "./color"
 import { makeForegroundMask, fillEnclosedHoles } from "./mask"
-import { erodeMask, featherMask } from "./refine"
+import { erodeMask, featherMask, removeSmallIslands } from "./refine"
 
 /** Sanitized default solid-removal options. */
 export const SOLID_DEFAULTS = {
@@ -16,9 +16,21 @@ export const SOLID_DEFAULTS = {
   erodeRadius: 1,
   featherRadius: 0,
   fillHoles: true,
+  removeIslands: true,
   minAlphaKeep: 128,
   maxWorkPixels: 6_000_000,
-} satisfies Required<Pick<SolidOptions, "tolerance" | "erodeRadius" | "featherRadius" | "fillHoles" | "minAlphaKeep" | "maxWorkPixels">>
+} satisfies Required<
+  Pick<
+    SolidOptions,
+    | "tolerance"
+    | "erodeRadius"
+    | "featherRadius"
+    | "fillHoles"
+    | "removeIslands"
+    | "minAlphaKeep"
+    | "maxWorkPixels"
+  >
+>
 
 export function withSolidDefaults(opts: SolidOptions = {}): Required<SolidOptions> {
   return {
@@ -69,6 +81,8 @@ export function extractSolidMask(
 
   let refined = mask
   if (o.fillHoles) refined = fillEnclosedHoles(refined, size)
+  // Drop isolated speckle islands before erosion so the edge pass stays clean.
+  if (o.removeIslands) refined = removeSmallIslands(refined, size, o.removeIslands === true ? undefined : o.removeIslands)
   if (o.erodeRadius > 0) refined = erodeMask(refined, size, o.erodeRadius)
   if (o.featherRadius > 0) refined = featherMask(refined, size, o.featherRadius)
 
