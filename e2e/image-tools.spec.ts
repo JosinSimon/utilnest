@@ -136,3 +136,41 @@ test("dimensions-checker reads image width and height", async ({ page }) => {
   await panel.getByText("1200 × 800 px").waitFor()
   expect(await panel.innerText()).toContain("Aspect ratio")
 })
+
+async function makeSubjectJpegDataUrl(page: Page, w: number, h: number): Promise<string> {
+  return page.evaluate(
+    ({ width, height }) => {
+      const canvas = document.createElement("canvas")
+      canvas.width = width
+      canvas.height = height
+      const ctx = canvas.getContext("2d")!
+      // Solid backdrop so Solid mode can cut around the subject.
+      ctx.fillStyle = "#a3e0a1"
+      ctx.fillRect(0, 0, width, height)
+      // A distinct subject near the centre, away from the edges.
+      ctx.fillStyle = "#1f1f2e"
+      ctx.beginPath()
+      ctx.arc(width / 2, height / 2, Math.min(width, height) / 4, 0, Math.PI * 2)
+      ctx.fill()
+      return canvas.toDataURL("image/jpeg", 0.92)
+    },
+    { width: w, height: h },
+  )
+}
+
+test("background-remover strips a solid background and downloads transparent PNG", async ({ page }) => {
+  const dataUrl = await makeSubjectJpegDataUrl(page, 640, 480)
+  await page.goto("/category/image/background-remover")
+  await page.getByRole("heading", { name: "Background Remover", exact: true }).waitFor()
+
+  await setFile(page, dataUrl, "subject.jpg")
+  // Mode recommendation should pick Solid for a solid backdrop and auto-select it.
+  await page.getByText(/Solid background detected/).waitFor()
+
+  await page.getByRole("button", { name: "Remove background" }).click()
+  await page.getByRole("button", { name: "Download", exact: true }).waitFor()
+
+  const panel = await page.locator(".space-y-3.rounded-lg").last().innerText()
+  expect(panel).toContain("File size")
+  expect(panel).toContain("640 × 480 px")
+})

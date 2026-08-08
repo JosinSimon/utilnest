@@ -47,7 +47,7 @@ Phase 2 notes: shared `shared/image` engine (geometry/specs/validator/metadata/e
 | 3 | Image Cropper | ✅ draggable box + aspect presets (1:1, 4:3, 3:2, 16:9), JPG/PNG |
 | 4 | JPG ⇔ PNG ⇔ WebP Converter | ✅ quality slider, all three formats |
 | 5 | DPI Converter | ✅ byte-level JFIF/pHYs rewrite (72/96/150/200/300/600 + custom) |
-| 6 | Background Remover (API / local later) | ⏳ |
+| 6 | Background Remover | ✅ hybrid Solid + AI (client-side, no upload) |
 | 7 | Image ↔ Base64 | ✅ encode image→data URL, decode base64→file with mime sniffing |
 | 8 | Watermark | ✅ text + logo overlay, position/opacity/size, JPEG/PNG |
 | 9 | Dimensions Checker | ✅ reads W×H, aspect, MP, format, DPI straight from bytes |
@@ -76,5 +76,5 @@ Future PDF ideas: OCR for scanned documents.
 
 - **Phase 1 (Text):** ✅ 10/10 tools live, 278 total tests passing, typecheck + lint + build green.
 - **Phase 2 (Government Forms):** ✅ 8/8 tools live, 342 unit tests + 6 browser (Playwright) tests passing, tsc + lint + build green. NEET/IBPS presets verified; SSC/Pan/Aadhaar/passport await official confirmation (backlog).
-- **Phase 3 (Image):** 🚧 8/10 tools live (Compressor, Resizer, Cropper, JPG/PNG/WebP Converter, Image↔Base64, DPI Converter, Watermark, Dimensions Checker). Reuses the Phase 2 shared `shared/image` engine. DPI converter rewrites JFIF/pHYs bytes (no resampling) and drives CRC32 for PNG. Remaining: background remover (heavy).
+- **Phase 3 (Image):** ✅ 10/10 tools live. Reuses the Phase 2 shared `shared/image` engine. Added a reusable `shared/segmentation` mask core (flood-fill solid matcher + lazy on-device ONNX AI via `onnxruntime-web`, dynamically imported so the initial bundle stays small). Background Remover ships both modes, nothing is uploaded; swap AI models by editing `model.ts` only.
 - **Phase 4 (PDF):** after Image.
