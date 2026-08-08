@@ -18,22 +18,28 @@ export default function PdfMerge({ tool }: { tool: ToolDefinition }) {
     tool.id,
   )
 
-  const onFiles = useCallback((list: FileList | null) => {
-    if (!list?.length) return
-    setWarning(null)
-    const incoming = Array.from(list)
-    const accepted: File[] = []
-    let skipped = 0
-    for (const f of incoming) {
-      if (f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
-        accepted.push(f)
-      } else {
-        skipped++
+  const onFiles = useCallback(
+    (list: FileList | null) => {
+      if (!list?.length) return
+      setWarning(null)
+      const incoming = Array.from(list)
+      const accepted: File[] = []
+      let skipped = 0
+      for (const f of incoming) {
+        if (f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf")) {
+          accepted.push(f)
+        } else {
+          skipped++
+        }
       }
-    }
-    if (skipped > 0) setWarning(`Skipped ${skipped} non-PDF file(s).`)
-    setFiles((prev) => [...prev, ...accepted])
-  }, [])
+      if (skipped > 0) setWarning(`Skipped ${skipped} non-PDF file(s).`)
+      if (accepted.length > 0) {
+        reset()
+        setFiles((prev) => [...prev, ...accepted])
+      }
+    },
+    [reset],
+  )
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
       <Card>
@@ -51,7 +57,10 @@ export default function PdfMerge({ tool }: { tool: ToolDefinition }) {
               multiple
               accept="application/pdf"
               className="hidden"
-              onChange={(e) => onFiles(e.target.files)}
+              onChange={(e) => {
+                onFiles(e.target.files)
+                e.currentTarget.value = ""
+              }}
             />
             <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
               {files.length > 0 ? "Add more PDFs" : "Choose PDFs"}

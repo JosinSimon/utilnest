@@ -99,7 +99,10 @@ export default function ImagesToPdf({ tool }: { tool: ToolDefinition }) {
               accept="image/jpeg,image/png,image/webp"
               aria-label="Choose images"
               className="hidden"
-              onChange={(e) => onFiles(e.target.files)}
+              onChange={(e) => {
+                onFiles(e.target.files)
+                e.currentTarget.value = ""
+              }}
             />
             <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
               {files.length > 0 ? "Add more images" : "Choose images"}

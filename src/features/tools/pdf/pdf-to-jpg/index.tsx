@@ -67,7 +67,10 @@ export default function PdfToJpg({ tool }: { tool: ToolDefinition }) {
               type="file"
               accept="application/pdf"
               className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              onChange={(e) => {
+                onFile(e.target.files?.[0])
+                e.currentTarget.value = ""
+              }}
             />
             <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
               {file ? "Choose another PDF" : "Choose a PDF"}
@@ -126,10 +129,8 @@ export default function PdfToJpg({ tool }: { tool: ToolDefinition }) {
           {result?.success && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-                <span className="text-muted-foreground">Pages</span>
+                <span className="text-muted-foreground">Pages converted</span>
                 <span>{result.data.pages}</span>
-                <span className="text-muted-foreground">Images</span>
-                <span>{result.data.imageCount}</span>
                 <span className="text-muted-foreground">Archive size</span>
                 <span>{formatBytes(result.data.bytes)}</span>
               </dl>

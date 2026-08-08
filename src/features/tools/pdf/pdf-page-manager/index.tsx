@@ -89,7 +89,10 @@ export default function PdfPageManager({ tool }: { tool: ToolDefinition }) {
               type="file"
               accept="application/pdf"
               className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              onChange={(e) => {
+                onFile(e.target.files?.[0])
+                e.currentTarget.value = ""
+              }}
             />
             <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
               {file ? "Choose another PDF" : "Choose a PDF"}
@@ -106,7 +109,14 @@ export default function PdfPageManager({ tool }: { tool: ToolDefinition }) {
             <div className="space-y-2">
               <Label>Pages — tick to keep, arrows to reorder</Label>
               <div className="grid max-h-80 grid-cols-1 gap-1 overflow-y-auto rounded-lg border p-2 sm:grid-cols-2">
-                {Array.from({ length: pageCount }, (_, i) => i + 1).map((page) => {
+                {[
+                  // Kept pages in their current (possibly reordered) order:
+                  ...kept,
+                  // Removed pages at the bottom, dimmed:
+                  ...Array.from({ length: pageCount }, (_, i) => i + 1).filter(
+                    (p) => !kept.includes(p),
+                  ),
+                ].map((page) => {
                   const isKept = kept.includes(page)
                   return (
                     <label

@@ -42,42 +42,94 @@ export async function imagesToPdf(
 ): Promise<Uint8Array> {
   if (images.length === 0) throw new Error("Add at least one image.")
   const doc = await PDFDocument.create()
-  const rad = degrees(opts.rotation)
 
   for (const img of images) {
     const kind = detectImageKind(img.bytes)
     const image = kind === "png" ? await doc.embedPng(img.bytes) : await doc.embedJpg(img.bytes)
 
+    const { rotation, pageSize } = opts
+
+    // For 90° / 270° rotations the image occupies swapped page space — use the
+    // transposed dimensions when calculating how to fit within the available area.
+    const swapped = rotation === 90 || rotation === 270
+    const footW = swapped ? image.height : image.width
+    const footH = swapped ? image.width : image.height
+
     // Page dims in pt.
     let pw: number
     let ph: number
-    if (opts.pageSize === "match") {
-      pw = image.width
-      ph = image.height
+    if (pageSize === "match") {
+      // Size the page to match the rotated image footprint (no margin needed).
+      pw = footW
+      ph = footH
     } else {
-      ;[pw, ph] = PDF_PAPER_PT[opts.pageSize]
+      ;[pw, ph] = PDF_PAPER_PT[pageSize]
     }
 
-    // Fit the image inside the page (respecting margin) preserving aspect.
-    const availW = pw - opts.margin * 2
-    const availH = ph - opts.margin * 2
-    const scale = Math.min(availW / image.width, availH / image.height)
-    const iw = image.width * scale
-    const ih = image.height * scale
-    const x = opts.margin + (availW - iw) / 2
-    const y = opts.margin + (availH - ih) / 2
+    // In "match" mode there is no margin — the page is already sized to the image.
+    const m = pageSize === "match" ? 0 : opts.margin
+    const availW = pw - m * 2
+    const availH = ph - m * 2
+
+    // Uniform scale so the rotated image fits within the available area.
+    const scale = Math.min(availW / footW, availH / footH)
+
+    // These are the dimensions passed to drawImage (un-rotated, as pdf-lib expects).
+    const dw = image.width * scale
+    const dh = image.height * scale
+
+    // Center of the available area on the page.
+    const cx = m + availW / 2
+    const cy = m + availH / 2
+
+    // pdf-lib rotates drawImage CCW around its bottom-left corner (x, y).
+    // The user's rotation values are CW degrees, so convert: pdfAngle = (360 - userCW) % 360.
+    // Then compute (x, y) so that the visual center of the rotated image lands on (cx, cy).
+    //
+    // After rotating by A° CCW around (x,y), the image center moves to:
+    //   0°  → (x + dw/2,  y + dh/2)
+    //   90° → (x - dh/2,  y + dw/2)  [CCW, i.e. user's 270°]
+    //  180° → (x - dw/2,  y - dh/2)
+    //  270° → (x + dh/2,  y - dw/2)  [CW,  i.e. user's 90°]
+    let x: number
+    let y: number
+    let pdfAngle: number
+
+    if (rotation === 0) {
+      pdfAngle = 0
+      x = cx - dw / 2
+      y = cy - dh / 2
+    } else if (rotation === 90) {
+      // User: 90° CW → pdf-lib: 270° CCW
+      pdfAngle = 270
+      // Center of rotated image = (x + dh/2, y - dw/2) → set equal to (cx, cy)
+      x = cx - dh / 2
+      y = cy + dw / 2
+    } else if (rotation === 180) {
+      pdfAngle = 180
+      // Center = (x - dw/2, y - dh/2)
+      x = cx + dw / 2
+      y = cy + dh / 2
+    } else {
+      // rotation === 270: User: 270° CW → pdf-lib: 90° CCW
+      pdfAngle = 90
+      // Center = (x - dh/2, y + dw/2)
+      x = cx + dh / 2
+      y = cy - dw / 2
+    }
 
     const page = doc.addPage([pw, ph])
     page.drawImage(image, {
       x,
       y,
-      width: iw,
-      height: ih,
-      rotate: opts.rotation === 0 ? undefined : rad,
+      width: dw,
+      height: dh,
+      rotate: pdfAngle === 0 ? undefined : degrees(pdfAngle),
     })
   }
   return doc.save()
 }
+
 
 export interface ImgInput {
   bytes: Uint8Array

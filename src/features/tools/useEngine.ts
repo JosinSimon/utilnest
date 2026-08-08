@@ -44,7 +44,7 @@ export function useEngine<T>(
         setState((s) => ({ ...s, progress: p }))
       })
       cancelRef.current = job.cancel
-      setState((s) => ({ ...s, isRunning: true, progress: 0, error: null }))
+      setState((s) => ({ ...s, isRunning: true, progress: 0, error: null, result: null }))
       track({
         name: options.eventName ?? "tool_used",
         props: { toolId, family },

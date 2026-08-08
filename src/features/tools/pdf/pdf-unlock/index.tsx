@@ -57,7 +57,10 @@ export default function PdfUnlock({ tool }: { tool: ToolDefinition }) {
               type="file"
               accept="application/pdf"
               className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              onChange={(e) => {
+                onFile(e.target.files?.[0])
+                e.currentTarget.value = ""
+              }}
             />
             <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
               {file ? "Choose another PDF" : "Choose a PDF"}
