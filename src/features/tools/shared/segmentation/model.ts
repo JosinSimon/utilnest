@@ -22,16 +22,18 @@ export interface AiModelConfig {
 }
 
 /**
- * Default: RMBG-1.4 (BRIA AI) — a compact (~176 MB ONNX) single-class
- * segmentation model with a permissive research license, popular for
- * background cutouts. Swap the URL to self-host at your origin or another
- * model (e.g. U2Net-Human, ISNet) without touching the engine.
+ * Default: RMBG-1.4 (BRIA AI) — a compact single-class segmentation model
+ * with a permissive research license, popular for background cutouts. The
+ * repo ships several ONNX builds; we use the quantized one (~44 MB) because
+ * it loads fast in the browser and is plenty accurate for cutouts. Swap the
+ * URL to self-host at your origin or another model (e.g. U2Net-Human, ISNet)
+ * without touching the engine.
  */
 export const AI_MODEL: AiModelConfig = {
-  label: "AI net — RMBG-1.4",
+  label: "AI net — RMBG-1.4 (quantized)",
   // Point to the official HuggingFace mirror build; swap for a self-hosted
   // bucket by changing only this constant.
-  url: "https://huggingface.co/briaai/RMBG-1.4/resolve/main/model.onnx",
+  url: "https://huggingface.co/briaai/RMBG-1.4/resolve/main/onnx/model_quantized.onnx",
   backend: "wasm",
   inputResolution: 1024,
   normalize: true,

@@ -87,28 +87,19 @@ export async function runAiMask(rgba: RgbaBuffer, size: Size): Promise<AiMaskRes
 
     const T = AI_MODEL.inputResolution
     const { width, height } = size
-    const scale = Math.min(T / width, T / height)
-    const iw = Math.max(1, Math.round(width * scale))
-    const ih = Math.max(1, Math.round(height * scale))
-    const padX = Math.floor((T - iw) / 2)
-    const padY = Math.floor((T - ih) / 2)
 
-    // Build [1,3,H,W] float32 tensor, RGB 0..1, grey letterbox.
-    const data = new Float32Array(1 * 3 * T * T)
-    for (let i = 0; i < T * T; i++) {
-      data[i * 3] = 170 / 255
-      data[i * 3 + 1] = 170 / 255
-      data[i * 3 + 2] = 170 / 255
-    }
-    for (let y = 0; y < ih; y++) {
-      const sy = Math.min(height - 1, Math.floor(y / scale))
-      for (let x = 0; x < iw; x++) {
-        const sx = Math.min(width - 1, Math.floor(x / scale))
+    // RMBG-1.4 preprocessor: resize (stretch) to 1024x1024, rescale by 1/255,
+    // normalize with mean 0.5 (i.e. x/255 - 0.5). No padding/letterbox.
+    const data = new Float32Array(3 * T * T)
+    for (let y = 0; y < T; y++) {
+      const sy = Math.min(height - 1, Math.floor((y / T) * height))
+      for (let x = 0; x < T; x++) {
+        const sx = Math.min(width - 1, Math.floor((x / T) * width))
         const src = (sy * width + sx) * 4
-        const oi = ((padY + y) * T + padX + x) * 3
-        data[oi] = rgba[src] / 255
-        data[oi + 1] = rgba[src + 1] / 255
-        data[oi + 2] = rgba[src + 2] / 255
+        const o = y * T + x
+        data[o] = rgba[src] / 255 - 0.5
+        data[T * T + o] = rgba[src + 1] / 255 - 0.5
+        data[2 * T * T + o] = rgba[src + 2] / 255 - 0.5
       }
     }
 
@@ -129,18 +120,28 @@ export async function runAiMask(rgba: RgbaBuffer, size: Size): Promise<AiMaskRes
       }
     }
 
-    // Soft-clip logits/probabilities to a smooth 0..1 ramp around 0.5.
-    const maskContent = new Uint8Array(iw * ih)
-    for (let y = 0; y < ih; y++) {
-      for (let x = 0; x < iw; x++) {
-        const r = raw[(padY + y) * side + padX + x]
-        const v = 1 / (1 + Math.exp(-Math.max(-8, Math.min(8, r - 0.5))))
-        maskContent[y * iw + x] = Math.round(v * 255)
-      }
+    // Decode the mask channel. RMBG emits probabilities already (0..1), while
+    // some u²-net/BiRefNet exports emit raw logits. Detect by range: if the
+    // max value is <= 1 it's a probability map — scale it straight to 0..255.
+    // Otherwise clamp the logits through a sigmoid. Subtracting 0.5 here is
+    // wrong (it flattens probabilities into ~0.5 for every pixel).
+    const nPx = T * T
+    let probMax = 0
+    for (let i = 0; i < nPx; i++) {
+      if (raw[i] > probMax) probMax = raw[i]
+    }
+    const isProbability = probMax <= 1
+    const maskContent = new Uint8Array(nPx)
+    for (let i = 0; i < nPx; i++) {
+      const r = raw[i]
+      let v = isProbability ? r : 1 / (1 + Math.exp(-Math.max(-16, Math.min(16, r))))
+      if (v < 0) v = 0
+      if (v > 1) v = 1
+      maskContent[i] = Math.round(v * 255)
     }
 
-    // Bilinear upscale to the original working resolution.
-    const mask = resizeMask(maskContent, { width: iw, height: ih }, { width, height })
+    // Bilinear upscale the full 1024x1024 mask to the working resolution.
+    const mask = resizeMask(maskContent, { width: T, height: T }, { width, height })
     const downloadBytes = estimateModelBytes()
     return { ok: true, mask, downloadBytes }
   } catch (err) {
@@ -154,5 +155,5 @@ export async function runAiMask(rgba: RgbaBuffer, size: Size): Promise<AiMaskRes
 
 /** Approximate model weight size for progress/messaging. */
 function estimateModelBytes(): number {
-  return AI_MODEL.url.includes("rmbg") ? 176_000_000 : 60_000_000
+  return AI_MODEL.url.includes("quantized") ? 44_000_000 : 176_000_000
 }
