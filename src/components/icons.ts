@@ -62,6 +62,17 @@ import {
   Share2,
   House,
   Gift,
+  Merge,
+  Combine,
+  FileStack,
+  Files,
+  File,
+  ScanLine,
+  Scan,
+  RotateCw,
+  FileDown,
+  FileImage,
+  Stamp,
   type LucideIcon,
 } from "lucide-react"
 
@@ -129,6 +140,17 @@ const iconMap: Record<string, LucideIcon> = {
   "share-2": Share2,
   house: House,
   gift: Gift,
+  merge: Merge,
+  combine: Combine,
+  "file-stack": FileStack,
+  files: Files,
+  file: File,
+  "scan-line": ScanLine,
+  scan: Scan,
+  "rotate-cw": RotateCw,
+  "file-down": FileDown,
+  "file-image": FileImage,
+  "file-watermark": Stamp,
 }
 
 export function getIcon(name: string): LucideIcon {

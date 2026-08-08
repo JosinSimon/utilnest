@@ -59,22 +59,22 @@ Future image ideas: blur / sharpen, AI upscaler, HEIC conversion.
 
 | # | Tool | Status |
 |---|------|--------|
-| 1 | Merge PDFs | ⏳ |
-| 2 | Split PDF | ⏳ |
-| 3 | Compress PDF | ⏳ |
-| 4 | JPG ↔ PDF | ⏳ |
-| 5 | PDF → JPG | ⏳ |
-| 6 | Rotate PDF | ⏳ |
-| 7 | Delete / Extract / Reorder Pages | ⏳ |
-| 8 | Unlock Password (remove protection) | ⏳ |
-| 9 | Protect PDF (password) | ⏳ |
-| 10 | Word / Excel / PPT ↔ PDF | ⏳ |
+| 1 | Merge PDFs | ✅ |
+| 2 | Split PDF | ✅ |
+| 3 | Compress PDF | ✅ |
+| 4 | Images → PDF (JPG / PNG / WebP) | ✅ |
+| 5 | PDF → JPG | ✅ |
+| 6 | Rotate PDF | ✅ |
+| 7 | Delete / Extract / Reorder Pages | ✅ |
+| 8 | Unlock Password (remove protection) | ✅ |
+| 9 | Protect PDF (password) | ✅ |
+| 10 | Watermark PDF | ✅ |
 
-Future PDF ideas: OCR for scanned documents.
+Future PDF ideas: OCR for scanned documents; Office (Word / Excel / PPT) ↔ PDF.
 
 ## Status
 
 - **Phase 1 (Text):** ✅ 10/10 tools live, 278 total tests passing, typecheck + lint + build green.
 - **Phase 2 (Government Forms):** ✅ 8/8 tools live, 342 unit tests + 6 browser (Playwright) tests passing, tsc + lint + build green. NEET/IBPS presets verified; SSC/Pan/Aadhaar/passport await official confirmation (backlog).
 - **Phase 3 (Image):** ✅ 10/10 tools live. Reuses the Phase 2 shared `shared/image` engine. Added a reusable `shared/segmentation` mask core (flood-fill solid matcher + lazy on-device ONNX AI via `onnxruntime-web`, dynamically imported so the initial bundle stays small). Background Remover ships both modes, nothing is uploaded; swap AI models by editing `model.ts` only.
-- **Phase 4 (PDF):** after Image.
+- **Phase 4 (PDF):** ✅ 10/10 tools live. Shared `shared/pdf` engine (pdf-lib + lazy pdf.js). pdf-lib covers merge/split/rotate/reorder/watermark/images; password protect/unlock uses Web Crypto (AES-256 R6) via zero-dependency `@pdfsmaller/pdf-*`; Compress and PDF→JPG rasterize lazily with pdf.js (canvas only). Split/PDF→JPG bundle their outputs with a homegrown zip writer. 448 unit tests + 14 e2e, tsc + lint + build green.
