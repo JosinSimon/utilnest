@@ -66,7 +66,7 @@ export const categories: Category[] = [
     name: "Business",
     tagline: "Invoices, quotes, receipts & margin tools",
     description:
-      "Generate professional invoices, quotations and receipts. Calculate profit margins and discounts instantly with free business calculators.",
+      "Free business tools for Indian businesses, freelancers, agencies and sellers. Create professional invoices, quotations and receipts, and calculate profit margins, discounts, markups and more.",
     icon: "briefcase",
     order: 7,
     keywords: ["invoice generator", "quotation generator", "profit margin calculator", "discount calculator"],

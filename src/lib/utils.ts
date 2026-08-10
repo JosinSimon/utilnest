@@ -18,11 +18,12 @@ export function formatBytes(bytes: number): string {
 }
 
 export function formatINR(value: number, digits = 2): string {
+  const hasDecimals = value % 1 !== 0
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
     currency: "INR",
     maximumFractionDigits: digits,
-    minimumFractionDigits: 0,
+    minimumFractionDigits: hasDecimals ? digits : 0,
   }).format(value)
 }
 
