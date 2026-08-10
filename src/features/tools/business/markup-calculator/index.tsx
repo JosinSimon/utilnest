@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { SegmentedControl } from "@/components/ui/segmented"
 import { formatINR, formatNumber } from "@/lib/utils"
-import { Info, Calculator, Table } from "lucide-react"
+import { Info, Table } from "lucide-react"
 
 export default function MarkupCalculator({ tool: _tool }: { tool: ToolDefinition }) {
   const [mode, setMode] = useState<"costToPrice" | "findMarkup" | "targetMargin">("costToPrice")
