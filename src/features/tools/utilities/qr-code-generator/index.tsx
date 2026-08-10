@@ -101,11 +101,28 @@ export default function QrCodeGenerator({ tool: _tool }: { tool: ToolDefinition 
     const win = window.open("", "_blank", "width=600,height=600")
     if (!win) return
     win.document.write(`
+      <!DOCTYPE html>
       <html>
-        <head><title>Print QR Code</title></head>
-        <body style="display:flex;justify-content:center;align-items:center;height:100vh;margin:0;">
-          <img src="${pngUrl}" style="max-width:80%;height:auto;" />
-          <script>window.onload = function() { window.print(); window.close(); };</script>
+        <head>
+          <title>Print QR Code</title>
+          <style>
+            body { display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background: #fff; }
+            img { max-width: 80%; height: auto; }
+          </style>
+        </head>
+        <body>
+          <img src="${pngUrl}" alt="QR Code" />
+          <script>
+            window.onload = function() {
+              setTimeout(function() {
+                window.focus();
+                window.print();
+              }, 250);
+            };
+            window.onafterprint = function() {
+              window.close();
+            };
+          </script>
         </body>
       </html>
     `)
