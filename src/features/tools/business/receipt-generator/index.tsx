@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 
-import { printDocument, downloadDocument } from "@/features/tools/business/shared/documentHelpers"
+import { printDocument, downloadPdf } from "@/features/tools/business/shared/documentHelpers"
 import { convertNumberToWords } from "@/features/tools/business/shared/numberToWords"
 import { formatINR } from "@/lib/utils"
 
@@ -120,8 +120,8 @@ export default function ReceiptGenerator({ tool: _tool }: { tool: ToolDefinition
           <Button onClick={() => printDocument("receipt-preview")} variant="outline" className="w-full">
             <Printer className="mr-2 h-4 w-4" /> Print
           </Button>
-          <Button onClick={() => downloadDocument("receipt-preview", `Receipt-${data.receiptNumber}.html`)} className="w-full">
-            <Download className="mr-2 h-4 w-4" /> Download
+          <Button onClick={() => downloadPdf("receipt-preview", `Receipt-${data.receiptNumber}.pdf`)} className="w-full">
+            <Download className="mr-2 h-4 w-4" /> Download PDF
           </Button>
         </div>
         

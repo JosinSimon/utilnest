@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { printDocument, downloadDocument } from "@/features/tools/business/shared/documentHelpers"
+import { printDocument, downloadPdf } from "@/features/tools/business/shared/documentHelpers"
 import { convertNumberToWords } from "@/features/tools/business/shared/numberToWords"
 import { formatINR } from "@/lib/utils"
 import { computeDocumentTotals, type LineItem, type GstRate } from "./engine"
@@ -126,7 +126,7 @@ export default function QuotationGenerator({ tool: _tool }: { tool: ToolDefiniti
       <div className="lg:w-1/2 flex flex-col gap-4">
         <div className="flex gap-2 sticky top-4 z-10 bg-background/95 p-2 backdrop-blur rounded-lg shadow-sm border">
           <Button onClick={() => printDocument("quotation-preview")} variant="outline" className="flex-1"><Printer className="mr-2 h-4 w-4" /> Print</Button>
-          <Button onClick={() => downloadDocument("quotation-preview", `Quote-${quoteMeta.quoteNumber}.html`)} className="flex-1"><Download className="mr-2 h-4 w-4" /> Download HTML</Button>
+          <Button onClick={() => downloadPdf("quotation-preview", `Quote-${quoteMeta.quoteNumber}.pdf`)} className="flex-1"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
         </div>
 
         <div className="border shadow-sm rounded-lg overflow-hidden bg-white text-black">

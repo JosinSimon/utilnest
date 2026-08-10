@@ -1,10 +1,30 @@
+import html2pdf from "html2pdf.js"
+
 /**
- * Document printing and downloading helpers for the document generators.
- *
- * Provides full CSS styling injected directly into printed windows and downloaded HTML files
- * so that layout (flex, grid, image constraints, typography, tables, totals) looks 100% identical
- * on screen, in print, and in standalone downloaded HTML files without relying on external Tailwind.
+ * Document printing and downloading helpers for document generators.
+ * Supports direct high-DPI client-side PDF generation, HTML downloads, and print dialogs.
  */
+
+/** Download the document directly as a PDF file (.pdf). */
+export function downloadPdf(elementId: string, fileName: string): void {
+  const el = document.getElementById(elementId)
+  if (!el) {
+    alert("Document element not found for PDF download.")
+    return
+  }
+
+  const pdfFileName = fileName.endsWith(".pdf") ? fileName : `${fileName.replace(/\.(html|pdf)$/i, "")}.pdf`
+
+  const opt = {
+    margin: [8, 8, 8, 8],
+    filename: pdfFileName,
+    image: { type: "jpeg", quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
+  }
+
+  html2pdf().set(opt).from(el).save()
+}
 
 /** Trigger window.print() scoped to a specific element. */
 export function printDocument(elementId: string): void {

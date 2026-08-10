@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { SegmentedControl } from "@/components/ui/segmented"
-import { printDocument, downloadDocument } from "@/features/tools/business/shared/documentHelpers"
+import { printDocument, downloadPdf } from "@/features/tools/business/shared/documentHelpers"
 import { convertNumberToWords } from "@/features/tools/business/shared/numberToWords"
 import { formatINR } from "@/lib/utils"
 import { computeDocumentTotals, type LineItem, type GstRate } from "./engine"
@@ -184,7 +184,7 @@ export default function InvoiceGenerator({ tool: _tool }: { tool: ToolDefinition
       <div className="xl:w-1/2 flex flex-col gap-4">
         <div className="flex gap-2 sticky top-4 z-10 bg-background/95 p-2 backdrop-blur rounded-lg shadow-sm border">
           <Button onClick={() => printDocument("invoice-preview")} variant="outline" className="flex-1"><Printer className="mr-2 h-4 w-4" /> Print</Button>
-          <Button onClick={() => downloadDocument("invoice-preview", `Invoice-${invoiceMeta.invoiceNumber}.html`)} className="flex-1"><Download className="mr-2 h-4 w-4" /> Download HTML</Button>
+          <Button onClick={() => downloadPdf("invoice-preview", `Invoice-${invoiceMeta.invoiceNumber}.pdf`)} className="flex-1"><Download className="mr-2 h-4 w-4" /> Download PDF</Button>
         </div>
 
         <div className="border shadow-sm rounded-lg overflow-hidden bg-white text-black">
