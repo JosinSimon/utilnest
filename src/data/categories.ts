@@ -52,54 +52,24 @@ export const categories: Category[] = [
     keywords: ["word counter", "character counter", "case converter", "remove duplicate lines"],
   },
   {
-    slug: "developer",
-    name: "Developer",
-    tagline: "JSON, Base64, UUID, hashing tools",
-    description:
-      "Free developer utilities: JSON formatter and validator, Base64 encoder/decoder, UUID generator, JWT decoder, hash generator and regex tester.",
-    icon: "code-2",
-    order: 6,
-    keywords: ["json formatter", "base64 encoder", "uuid generator", "jwt decoder"],
-  },
-  {
     slug: "business",
     name: "Business",
     tagline: "Invoices, quotes, receipts & margin tools",
     description:
       "Free business tools for Indian businesses, freelancers, agencies and sellers. Create professional invoices, quotations and receipts, and calculate profit margins, discounts, markups and more.",
     icon: "briefcase",
-    order: 7,
+    order: 6,
     keywords: ["invoice generator", "quotation generator", "profit margin calculator", "discount calculator"],
-  },
-  {
-    slug: "converters",
-    name: "Converters",
-    tagline: "Unit conversion made instant",
-    description:
-      "Convert length, weight, temperature, area, volume, data storage, speed and time units. Simple, accurate and completely free.",
-    icon: "arrow-left-right",
-    order: 8,
-    keywords: ["length converter", "weight converter", "temperature converter", "unit converter"],
   },
   {
     slug: "utilities",
     name: "Utilities",
     tagline: "QR codes, passwords, dates & timers",
     description:
-      "Free everyday utilities: QR code generator, password generator, age calculator, random number generator, date difference and timers.",
+      "Free everyday utilities for quick calculations, conversions, generators, timers and more. Everything runs privately in your browser with no sign-up required.",
     icon: "wand-2",
-    order: 9,
+    order: 7,
     keywords: ["qr code generator", "password generator", "age calculator", "random number generator"],
-  },
-  {
-    slug: "ai",
-    name: "AI",
-    tagline: "AI-powered tools, coming soon",
-    description:
-      "AI tools are on the way. When they arrive, everything will continue to run fast, privately and without unnecessary complexity.",
-    icon: "sparkles",
-    order: 10,
-    keywords: ["ai tools", "ai utilities"],
   },
 ]
 
@@ -108,5 +78,5 @@ export function getCategory(slug: CategorySlug): Category | undefined {
 }
 
 export function categoryBySlug(slug: string): Category | undefined {
-  return categories.find((c) => c.slug === slug)
+  return categories.find((c) => c.slug === (slug as CategorySlug))
 }

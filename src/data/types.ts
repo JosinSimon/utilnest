@@ -4,11 +4,8 @@ export type CategorySlug =
   | "image"
   | "government"
   | "text"
-  | "developer"
   | "business"
-  | "converters"
   | "utilities"
-  | "ai"
 
 export type SchemaType = "Calculator" | "Converter" | "Generator" | "Utility"
 export type EngineFamily = "calculator" | "text" | "file"
