@@ -16,7 +16,7 @@ export function downloadPdf(elementId: string, fileName: string): void {
   const pdfFileName = fileName.endsWith(".pdf") ? fileName : `${fileName.replace(/\.(html|pdf)$/i, "")}.pdf`
 
   const opt = {
-    margin: [8, 8, 8, 8],
+    margin: [8, 8, 8, 8] as [number, number, number, number],
     filename: pdfFileName,
     image: { type: "jpeg", quality: 0.98 },
     html2canvas: { scale: 2, useCORS: true, logging: false },
