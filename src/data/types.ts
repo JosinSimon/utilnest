@@ -40,6 +40,8 @@ export interface Category {
   icon: string
   order: number
   keywords: string[]
+  color?: string
+  previewTags?: string[]
 }
 
 export interface ToolDefinition {
