@@ -1,24 +1,40 @@
 import { Link } from "react-router-dom"
-import { ChevronRight } from "lucide-react"
-import type { Breadcrumb } from "@/data/derive"
+import { ChevronRight, Home } from "lucide-react"
 
-export function Breadcrumbs({ items }: { items: Breadcrumb[] }) {
+export interface BreadcrumbItem {
+  label: string
+  path: string
+}
+
+export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground">
-      <ol className="flex flex-wrap items-center gap-1.5">
-        {items.map((item, i) => {
-          const isLast = i === items.length - 1
+    <nav aria-label="Breadcrumb" className="mb-4">
+      <ol className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
+        <li>
+          <Link
+            to="/"
+            className="flex items-center gap-1 hover:text-foreground transition-colors"
+            aria-label="Home"
+          >
+            <Home className="size-3.5 text-muted-foreground/80" />
+            <span>Home</span>
+          </Link>
+        </li>
+
+        {items.map((item, index) => {
+          const isLast = index === items.length - 1
           return (
-            <li key={item.href + item.label} className="flex items-center gap-1.5">
-              {i > 0 && (
-                <ChevronRight className="size-3.5 text-muted-foreground/60" aria-hidden="true" />
-              )}
+            <li key={item.path} className="flex items-center gap-1.5">
+              <ChevronRight className="size-3 text-muted-foreground/60 shrink-0" />
               {isLast ? (
-                <span aria-current="page" className="text-foreground">
+                <span className="font-semibold text-foreground truncate max-w-[200px] sm:max-w-none" aria-current="page">
                   {item.label}
                 </span>
               ) : (
-                <Link to={item.href} className="transition-colors hover:text-foreground">
+                <Link
+                  to={item.path}
+                  className="hover:text-foreground transition-colors truncate max-w-[150px] sm:max-w-none"
+                >
                   {item.label}
                 </Link>
               )}

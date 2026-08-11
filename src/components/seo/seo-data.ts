@@ -22,6 +22,23 @@ export interface SeoData {
 }
 
 export function toolSeoData(tool: ToolDefinition): SeoData {
+  const breadcrumbs = [
+    { label: "Home", url: site.url },
+    { label: tool.category, url: `${site.url}/category/${tool.category}` },
+    { label: tool.name, url: toolCanonicalUrl(tool) },
+  ]
+
+  const jsonLdList: JsonLd[] = [
+    softwareJsonLd(tool),
+    breadcrumbJsonLd(breadcrumbs),
+  ]
+
+  const faq = faqJsonLd(tool.faq)
+  if (faq) jsonLdList.push(faq)
+
+  const howTo = howToJsonLd(tool.howTo, tool.name)
+  if (howTo) jsonLdList.push(howTo)
+
   return {
     title: seoTitleFor(tool),
     description: tool.shortDescription,
@@ -35,10 +52,25 @@ export function toolSeoData(tool: ToolDefinition): SeoData {
       image: toolOgImage(tool),
       url: toolCanonicalUrl(tool),
     },
+    jsonLd: jsonLdList,
   }
 }
 
-export function categorySeoData(category: Category): SeoData {
+export function categorySeoData(category: Category, categoryFaqs?: FaqItem[]): SeoData {
+  const breadcrumbs = [
+    { label: "Home", url: site.url },
+    { label: category.name, url: categoryCanonicalUrl(category.slug) },
+  ]
+
+  const jsonLdList: JsonLd[] = [
+    breadcrumbJsonLd(breadcrumbs),
+  ]
+
+  if (categoryFaqs && categoryFaqs.length > 0) {
+    const faq = faqJsonLd(categoryFaqs)
+    if (faq) jsonLdList.push(faq)
+  }
+
   return {
     title: seoTitleForCategory(category.name),
     description: category.description,
@@ -52,6 +84,7 @@ export function categorySeoData(category: Category): SeoData {
       image: `${site.url}/og/category-${category.slug}.png`,
       url: categoryCanonicalUrl(category.slug),
     },
+    jsonLd: jsonLdList,
   }
 }
 
@@ -105,7 +138,7 @@ export function softwareJsonLd(tool: ToolDefinition): JsonLd {
     url: toolCanonicalUrl(tool),
     description: tool.shortDescription,
     applicationCategory: toolCategory(tool.schemaType),
-    operatingSystem: "Web",
+    operatingSystem: "Web Browser",
     browserRequirements: "Requires JavaScript",
     inLanguage: "en-IN",
     offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
@@ -114,7 +147,7 @@ export function softwareJsonLd(tool: ToolDefinition): JsonLd {
 }
 
 export function faqJsonLd(faq: FaqItem[]): JsonLd | null {
-  if (!faq.length) return null
+  if (!faq || !faq.length) return null
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -126,12 +159,12 @@ export function faqJsonLd(faq: FaqItem[]): JsonLd | null {
   }
 }
 
-export function howToJsonLd(howTo: HowToStep[]): JsonLd | null {
-  if (!howTo.length) return null
+export function howToJsonLd(howTo: HowToStep[], name?: string): JsonLd | null {
+  if (!howTo || !howTo.length) return null
   return {
     "@context": "https://schema.org",
     "@type": "HowTo",
-    name: "How to use",
+    name: name ? `How to use ${name}` : "How to use",
     step: howTo.map((s, i) => ({
       "@type": "HowToStep",
       position: i + 1,

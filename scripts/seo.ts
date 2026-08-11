@@ -17,12 +17,15 @@ async function main() {
     const { sitemapRoutes } = await server.ssrLoadModule("/src/app/static-routes.ts")
     const { site } = await server.ssrLoadModule("/src/data/site.ts")
 
+    const todayIso = new Date().toISOString().split("T")[0]
+
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${sitemapRoutes
   .map(
     (r) => `  <url>
     <loc>${site.url}${r.path === "/" ? "" : r.path}</loc>
+    <lastmod>${todayIso}</lastmod>
   </url>`,
   )
   .join("\n")}

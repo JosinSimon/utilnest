@@ -7,7 +7,7 @@ import { categoryPath } from "@/data/derive"
 import { Breadcrumbs } from "@/components/Breadcrumbs"
 import { ToolWidget } from "@/features/tools/ToolWidget"
 import { TrustBanner } from "./TrustBanner"
-import { AdPlaceholder } from "./AdPlaceholder"
+import { AdSlot } from "@/components/ads/AdSlot"
 import { Seo } from "@/components/seo/Seo"
 import { ToolCard } from "@/components/ToolCard"
 import {
@@ -19,6 +19,7 @@ import {
 } from "@/components/seo/seo-data"
 import { toolBreadcrumbs } from "@/data/derive"
 import { formatDate } from "@/lib/format"
+import { site } from "@/data/site"
 
 interface ToolLayoutProps {
   tool: ToolDefinition
@@ -45,26 +46,26 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
             breadcrumbJsonLd(
               breadcrumbs.map((b) => ({
                 label: b.label,
-                url: `https://toolsonway.in${b.href}`,
+                url: `${site.url}${b.href}`,
               })),
             ),
             softwareJsonLd(tool),
             faqJsonLd(tool.faq),
-            howToJsonLd(tool.howTo),
+            howToJsonLd(tool.howTo, tool.name),
           ].filter((x): x is Record<string, unknown> => Boolean(x)),
         }}
       />
 
       <article className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
         <div className="py-6">
-          <Breadcrumbs items={breadcrumbs} />
+          <Breadcrumbs items={breadcrumbs.map((b) => ({ label: b.label, path: b.href }))} />
         </div>
 
         <header className="mt-3">
-          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl text-foreground">
             {tool.name}
           </h1>
-          <p className="mt-3 max-w-2xl text-lg text-muted-foreground">
+          <p className="mt-3 max-w-2xl text-base sm:text-lg text-muted-foreground leading-relaxed">
             {tool.longDescription}
           </p>
         </header>
@@ -75,33 +76,36 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
 
         {tool.privacyNote === "client" && <TrustBanner className="mt-6" />}
 
-        <AdPlaceholder slot="banner" className="mt-8" />
+        {/* Policy-safe responsive AdSlot placeholder */}
+        <AdSlot slotType="rectangle" className="mt-8" />
 
-        <section className="mt-12">
-          <h2 className="text-2xl font-semibold tracking-tight">
-            How to use {tool.name}
-          </h2>
-          <ol className="mt-4 space-y-3">
-            {tool.howTo.map((step, i) => (
-              <li key={i} className="flex gap-3">
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
-                  {i + 1}
-                </span>
-                <div>
-                  <p className="font-medium">{step.title}</p>
-                  <p className="text-muted-foreground">{step.description}</p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </section>
+        {tool.howTo && tool.howTo.length > 0 && (
+          <section className="mt-12">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+              How to use {tool.name}
+            </h2>
+            <ol className="mt-4 space-y-3">
+              {tool.howTo.map((step, i) => (
+                <li key={i} className="flex gap-3 items-start">
+                  <span className="flex size-7 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground">
+                    {i + 1}
+                  </span>
+                  <div>
+                    <p className="font-semibold text-foreground text-sm sm:text-base">{step.title}</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">{step.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        )}
 
         {tool.sections.map((section) => (
           <section key={section.heading} className="mt-10">
-            <h2 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               {section.heading}
             </h2>
-            <div className="mt-3 text-muted-foreground">
+            <div className="mt-3 text-muted-foreground text-sm sm:text-base leading-relaxed">
               {section.body.split("\n\n").map((para, i) => (
                 <p key={i} className="mt-3 first:mt-0">
                   {para}
@@ -113,15 +117,15 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
 
         {tool.examples && tool.examples.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-2xl font-semibold tracking-tight">Examples</h2>
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">Examples</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               {tool.examples.map((ex) => (
                 <div key={ex.title} className="rounded-xl border bg-card p-5">
-                  <p className="font-medium">{ex.title}</p>
+                  <p className="font-semibold text-foreground">{ex.title}</p>
                   <dl className="mt-3 space-y-2 text-sm">
                     <div>
                       <dt className="text-muted-foreground">Input</dt>
-                      <dd className="font-mono">{ex.input}</dd>
+                      <dd className="font-mono text-foreground">{ex.input}</dd>
                     </div>
                     <div>
                       <dt className="text-muted-foreground">Output</dt>
@@ -136,18 +140,18 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
           </section>
         )}
 
-        {tool.faq.length > 0 && (
+        {tool.faq && tool.faq.length > 0 && (
           <section className="mt-10">
-            <h2 className="text-2xl font-semibold tracking-tight">
+            <h2 className="text-2xl font-semibold tracking-tight text-foreground">
               Frequently asked questions
             </h2>
             <div className="mt-4 space-y-3">
               {tool.faq.map((f) => (
-                <details key={f.question} className="group rounded-xl border bg-card p-5">
-                  <summary className="cursor-pointer font-medium">
+                <details key={f.question} className="group rounded-xl border border-border/70 bg-card p-4 transition-all">
+                  <summary className="cursor-pointer font-semibold text-foreground">
                     {f.question}
                   </summary>
-                  <p className="mt-2 text-muted-foreground">{f.answer}</p>
+                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed pt-2 border-t border-border/40">{f.answer}</p>
                 </details>
               ))}
             </div>
@@ -171,7 +175,7 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
           </div>
           {categoryTools.length > 0 && (
             <div className="mt-6">
-              <h2 className="text-xl font-semibold tracking-tight">
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">
                 More {category?.name.toLowerCase() ?? "tools"} tools
               </h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -185,7 +189,7 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
 
         {related.length > 0 && (
           <section className="mt-12">
-            <h2 className="text-xl font-semibold tracking-tight">Related tools</h2>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">Related tools</h2>
             <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {related.map((t) => (
                 <ToolCard key={t.id} tool={t} />
