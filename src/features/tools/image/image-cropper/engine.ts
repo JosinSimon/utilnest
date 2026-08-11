@@ -37,11 +37,15 @@ export function toSourceRect(
   sourceWidth: number,
   sourceHeight: number,
 ): { sx: number; sy: number; sWidth: number; sHeight: number } {
-  const sx = Math.max(0, crop.x * sourceWidth)
-  const sy = Math.max(0, crop.y * sourceHeight)
-  const sWidth = Math.min(sourceWidth - sx, crop.width * sourceWidth)
-  const sHeight = Math.min(sourceHeight - sy, crop.height * sourceHeight)
-  return { sx: Math.round(sx), sy: Math.round(sy), sWidth: Math.round(sWidth), sHeight: Math.round(sHeight) }
+  const width = Math.max(1, sourceWidth)
+  const height = Math.max(1, sourceHeight)
+  const rawW = Math.max(1, Math.round(Math.abs(crop.width) * width))
+  const rawH = Math.max(1, Math.round(Math.abs(crop.height) * height))
+  const sWidth = Math.min(width, rawW)
+  const sHeight = Math.min(height, rawH)
+  const sx = Math.min(Math.max(0, Math.round(crop.x * width)), width - sWidth)
+  const sy = Math.min(Math.max(0, Math.round(crop.y * height)), height - sHeight)
+  return { sx, sy, sWidth, sHeight }
 }
 
 export function runImageCrop(input: ImageCropInput): FileJob<ImageCropOutput> {

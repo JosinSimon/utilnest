@@ -18,6 +18,7 @@ interface FormState {
   exactKb: string
   width: string
   height: string
+  allowDownscale: boolean
 }
 
 function parseDimensions(w: string, h: string): { width?: number; height?: number } {
@@ -35,6 +36,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     exactKb: "",
     width: "",
     height: "",
+    allowDownscale: true,
   })
   const [running, setRunning] = useState(false)
   const [output, setOutput] = useState<CompressToolOutput | null>(null)
@@ -66,7 +68,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
         kbMax: max,
         ...dims,
         allowedFormats: ["jpeg"],
-        allowDownscale: false,
+        allowDownscale: form.allowDownscale,
         minDimensionGuard: 1,
       }
     }
@@ -78,7 +80,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
       kbMax: exact,
       ...dims,
       allowedFormats: ["jpeg"],
-      allowDownscale: false,
+      allowDownscale: form.allowDownscale,
       minDimensionGuard: 1,
     }
   }, [form])
@@ -229,6 +231,21 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
               />
             </div>
           </div>
+
+          <label className="flex items-start gap-3 rounded-lg border bg-secondary/40 p-3 text-sm">
+            <input
+              type="checkbox"
+              checked={form.allowDownscale}
+              onChange={(e) => set("allowDownscale", e.target.checked)}
+              className="mt-1"
+            />
+            <span>
+              <span className="block font-medium">Allow downscaling if needed</span>
+              <span className="text-xs text-muted-foreground">
+                Helps large photos reach strict KB limits. Turn off when an official form mandates exact pixel dimensions.
+              </span>
+            </span>
+          </label>
 
           <Button type="button" onClick={compress} disabled={!file || running} className="w-full">
             {running ? "Compressing…" : "Compress image"}

@@ -61,4 +61,10 @@ describe("remove-duplicate-lines engine", () => {
       dedupeLines(input.text, { caseInsensitive: false, trim: true }),
     )
   })
+
+  it("does not collapse whitespace-only lines into truly empty lines", () => {
+    const r = dedupeLines("\n   \n\t", { trim: true })
+    expect(r.output).toBe("\n   \n\t")
+    expect(r.removedCount).toBe(0)
+  })
 })

@@ -63,4 +63,17 @@ describe("preset registry integrity", () => {
     expect(getPresetById("neet-ug-signature")?.kbMin).toBe(10)
     expect(getPresetById("neet-ug-signature")?.kbMax).toBe(100)
   })
+
+  it("includes common UPSC, JEE, GATE and CUET placeholders instead of omitting those exams", () => {
+    expect(getPresetById("upsc-cse-photo")).toBeDefined()
+    expect(getPresetById("jee-main-photo")).toBeDefined()
+    expect(getPresetById("gate-photo")).toBeDefined()
+    expect(getPresetById("cuet-ug-photo")).toBeDefined()
+  })
+
+  it("keeps official dimensions for passport and PAN presets", () => {
+    expect(getPresetById("passport-photo")?.dimensions).toEqual({ width: 3.5, height: 4.5, unit: "cm" })
+    expect(getPresetById("pan-photo")?.dimensions).toEqual({ width: 3.5, height: 2.5, unit: "cm" })
+    expect(getPresetById("pan-signature")?.dimensions).toEqual({ width: 4.5, height: 2.0, unit: "cm" })
+  })
 })

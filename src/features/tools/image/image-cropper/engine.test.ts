@@ -26,4 +26,14 @@ describe("toSourceRect", () => {
     expect(r.sx).toBe(0)
     expect(r.sy).toBe(0)
   })
+
+  it("clamps an origin beyond the image to a valid non-negative crop", () => {
+    const r = toSourceRect({ x: 1.2, y: 1.1, width: 0.5, height: 0.5 }, 100, 100)
+    expect(r.sx).toBeGreaterThanOrEqual(0)
+    expect(r.sy).toBeGreaterThanOrEqual(0)
+    expect(r.sWidth).toBeGreaterThanOrEqual(1)
+    expect(r.sHeight).toBeGreaterThanOrEqual(1)
+    expect(r.sx + r.sWidth).toBeLessThanOrEqual(100)
+    expect(r.sy + r.sHeight).toBeLessThanOrEqual(100)
+  })
 })

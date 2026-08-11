@@ -8,9 +8,9 @@ export const definition: ToolDefinition = {
   path: "government/document-scanner",
 
   shortDescription:
-    "Turn photos or scanned pages of documents into a single PDF — straighten, rotate and combine in your browser.",
+    "Turn photos or scanned pages of documents into a single PDF — rotate and combine in your browser.",
   longDescription:
-    "Upload one or more photos of a document (form, certificate, letters) and this tool combines them into a single PDF. You can rotate pages, fit them to A4, and download a clean, shareable PDF. All processing is done locally — your documents never leave your device.",
+    "Upload one or more photos of a document (form, certificate, letters) and this tool combines them into a single PDF. You can rotate pages, fit them to A4, and download a clean, shareable PDF. It does not perform automatic edge detection or perspective correction. All processing is done locally — your documents never leave your device.",
   schemaType: "Utility",
 
   sections: [

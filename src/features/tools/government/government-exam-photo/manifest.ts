@@ -54,7 +54,7 @@ export const definition: ToolDefinition = {
     {
       question: "Which exams are covered?",
       answer:
-        "The current preset registry includes SSC CGL, NEET UG and IBPS PO/Clerk (photo + signature). More presets are added as official sources are confirmed.",
+        "The current preset registry includes SSC CGL, NEET UG, IBPS PO/Clerk, UPSC CSE, JEE Main, GATE and CUET UG (photo + signature). Unverified presets are clearly marked until official sources are confirmed.",
     },
     {
       question: "What if my exam isn't listed?",

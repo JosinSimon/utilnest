@@ -33,13 +33,27 @@ export function runCompress(input: CompressToolInput): FileJob<CompressToolOutpu
       const width = target.width ?? decoded.sourceWidth
       const height = target.height ?? decoded.sourceHeight
       const handle = makeRenderHandle(decoded, width, height)
-      const compressInput = handle.asCompressInput(width, height)
+      let outWidth = width
+      let outHeight = height
+      let compressInput = handle.asCompressInput(outWidth, outHeight)
       if (cancelled) throw new Error("cancelled")
-      const outcome = await compressToTarget(compressInput, target)
+      let outcome = await compressToTarget(compressInput, target)
+      let attempts = 0
+      while (target.allowDownscale && outcome.status === "cannotHitTarget" && attempts < 12) {
+        const ratio = Math.sqrt((target.kbMax * 1024) / Math.max(1, outcome.bytes)) * 0.92
+        const nextWidth = Math.max(target.minDimensionGuard, Math.floor(outWidth * Math.min(0.9, ratio)))
+        const nextHeight = Math.max(target.minDimensionGuard, Math.floor(outHeight * Math.min(0.9, ratio)))
+        if (nextWidth >= outWidth && nextHeight >= outHeight) break
+        outWidth = nextWidth
+        outHeight = nextHeight
+        compressInput = handle.asCompressInput(outWidth, outHeight)
+        outcome = await compressToTarget(compressInput, { ...target, width: outWidth, height: outHeight })
+        attempts += 1
+      }
       onProgress(1)
       const blob = outcome.blob
       const base = input.file.name.replace(/\.[^/.]+$/, "")
-      const name = `${base}-${width}x${height}.${outcome.format === "png" ? "png" : "jpg"}`
+      const name = `${base}-${outcome.width}x${outcome.height}.${outcome.format === "png" ? "png" : "jpg"}`
       return {
         success: true,
         data: {

@@ -1,5 +1,6 @@
 import type { FileJob } from "@/features/tools/engine"
 import { fileToUint8, probePdf, watermarkPdf } from "@/features/tools/shared/pdf"
+import type { TextWatermarkOptions } from "@/features/tools/shared/pdf"
 
 export interface PdfWatermarkInput {
   file: File
@@ -19,6 +20,18 @@ export interface PdfWatermarkOutput {
   pageCount: number
 }
 
+export function buildWatermarkOptions(
+  input: Pick<PdfWatermarkInput, "text" | "color" | "scale" | "tiles" | "opacity">,
+): TextWatermarkOptions {
+  return {
+    text: input.text,
+    color: input.color ?? "#9ca3af",
+    scale: input.scale ?? 0.045,
+    tiles: input.tiles ?? 4,
+    opacity: input.opacity ?? 0.18,
+  }
+}
+
 export function runPdfWatermark(input: PdfWatermarkInput): FileJob<PdfWatermarkOutput> {
   let cancelled = false
   let onProgress: (p: number) => void = () => {}
@@ -31,13 +44,7 @@ export function runPdfWatermark(input: PdfWatermarkInput): FileJob<PdfWatermarkO
       const { pageCount } = await probePdf(bytes)
       onProgress(0.4)
 
-      const out = await watermarkPdf(bytes, {
-        text: input.text,
-        color: "#9ca3af",
-        scale: input.scale ?? 0.045,
-        tiles: input.tiles ?? 4,
-        opacity: input.opacity ?? 0.18,
-      })
+      const out = await watermarkPdf(bytes, buildWatermarkOptions(input))
       if (cancelled) throw new Error("cancelled")
 
       const blob = new Blob([out as unknown as BlobPart], { type: "application/pdf" })

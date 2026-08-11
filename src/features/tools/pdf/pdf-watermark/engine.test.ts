@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest"
 import { PDFDocument } from "pdf-lib"
-import { runPdfWatermark } from "./engine"
+import { runPdfWatermark, buildWatermarkOptions } from "./engine"
 import { watermarkPdf } from "@/features/tools/shared/pdf"
 
 async function makePdf(pageCount = 2): Promise<Uint8Array> {
@@ -47,5 +47,9 @@ describe("pdf-watermark engine", () => {
     }).result
     expect(res.success).toBe(false)
     expect(res.error?.message).toMatch(/empty/i)
+  })
+
+  it("passes the user-selected color to the shared watermark operation", () => {
+    expect(buildWatermarkOptions({ text: "DRAFT", color: "#ff0000" }).color).toBe("#ff0000")
   })
 })

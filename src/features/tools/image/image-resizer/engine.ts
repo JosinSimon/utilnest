@@ -28,11 +28,13 @@ export function resolveDimensions(
   sourceHeight: number,
   target?: { width?: number; height?: number },
 ): { width: number; height: number } {
-  const w = target?.width
-  const h = target?.height
-  if (w && h) return { width: Math.max(1, Math.round(w)), height: Math.max(1, Math.round(h)) }
-  if (w) return { width: Math.round(w), height: Math.max(1, Math.round(w * (sourceHeight / sourceWidth))) }
-  if (h) return { width: Math.max(1, Math.round(h * (sourceWidth / sourceHeight))), height: Math.round(h) }
+  const normalize = (v: number | undefined): number | undefined =>
+    v === undefined || !Number.isFinite(v) ? undefined : Math.max(1, Math.round(v))
+  const w = normalize(target?.width)
+  const h = normalize(target?.height)
+  if (w !== undefined && h !== undefined) return { width: w, height: h }
+  if (w !== undefined) return { width: w, height: Math.max(1, Math.round(w * (sourceHeight / sourceWidth))) }
+  if (h !== undefined) return { width: Math.max(1, Math.round(h * (sourceWidth / sourceHeight))), height: h }
   return { width: sourceWidth, height: sourceHeight }
 }
 

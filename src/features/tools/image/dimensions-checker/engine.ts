@@ -140,20 +140,26 @@ function readJpegDpi(bytes: Uint8Array): number {
   return 0
 }
 
+function readU32(bytes: Uint8Array, offset: number): number {
+  return (
+    bytes[offset] * 0x1000000 +
+    ((bytes[offset + 1] << 16) | (bytes[offset + 2] << 8) | bytes[offset + 3])
+  )
+}
+
 function parsePng(bytes: Uint8Array): { width: number; height: number; dpi: number } {
   // IHDR is at offset 16: length(4) type(4) data(13) crc(4)
-  const width = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19]
-  const height = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23]
+  const width = readU32(bytes, 16)
+  const height = readU32(bytes, 20)
   let dpi = 0
   // Scan chunks for pHYs
   let i = 8
   while (i + 8 <= bytes.length) {
-    const len = (bytes[i] << 24) | (bytes[i + 1] << 16) | (bytes[i + 2] << 8) | bytes[i + 3]
+    const len = readU32(bytes, i)
     const type =
       String.fromCharCode(bytes[i + 4], bytes[i + 5], bytes[i + 6], bytes[i + 7])
     if (type === "pHYs" && len >= 9) {
-      const ppiX =
-        (bytes[i + 8] << 24) | (bytes[i + 9] << 16) | (bytes[i + 10] << 8) | bytes[i + 11]
+      const ppiX = readU32(bytes, i + 8)
       dpi = Math.round(ppiX * 0.0254)
     }
     if (type === "IEND") break

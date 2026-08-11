@@ -67,7 +67,18 @@ export async function rgbaToBlob(
   buf.data.set(rgba)
   ctx.putImageData(buf, 0, 0)
   const type = format === "png" ? "image/png" : "image/jpeg"
-  return canvasToBlob(canvas, type, format === "jpeg" ? quality : undefined)
+  if (format === "jpeg") {
+    const flattened = document.createElement("canvas")
+    flattened.width = size.width
+    flattened.height = size.height
+    const flatCtx = flattened.getContext("2d")
+    if (!flatCtx) throw new Error("Could not acquire a 2D canvas context.")
+    flatCtx.fillStyle = "#ffffff"
+    flatCtx.fillRect(0, 0, size.width, size.height)
+    flatCtx.drawImage(canvas, 0, 0)
+    return canvasToBlob(flattened, type, quality)
+  }
+  return canvasToBlob(canvas, type)
 }
 
 /** Encode the result in a file-friendly name. */

@@ -73,28 +73,29 @@ export const calculateEmi: CalculatorEngine<EmiInput, EmiResult> = ({
   emi = round2(emi)
 
   const schedule: EmiScheduleRow[] = []
-  let balance = p
-  let totalPayment = 0
-  let totalInterest = 0
+  let balanceCents = Math.round(p * 100)
+  let totalPaymentCents = 0
+  let totalInterestCents = 0
+  const emiCents = Math.round(emi * 100)
 
   for (let month = 1; month <= n; month++) {
-    const interest = balance * r
-    let payment: number
+    const interestCents = Math.round(balanceCents * r)
+    let paymentCents: number
     if (month === n) {
-      payment = round2(balance + interest)
+      paymentCents = balanceCents + interestCents
     } else {
-      payment = emi
+      paymentCents = emiCents
     }
-    const principalPart = payment - interest
-    balance = Math.max(0, balance - principalPart)
-    totalPayment += payment
-    totalInterest += interest
+    const principalCents = Math.max(0, paymentCents - interestCents)
+    balanceCents = Math.max(0, balanceCents - principalCents)
+    totalPaymentCents += paymentCents
+    totalInterestCents += interestCents
     schedule.push({
       month,
-      payment: round2(payment),
-      interest: round2(interest),
-      principal: round2(principalPart),
-      balance: round2(balance),
+      payment: paymentCents / 100,
+      interest: interestCents / 100,
+      principal: principalCents / 100,
+      balance: balanceCents / 100,
     })
   }
 
@@ -104,8 +105,8 @@ export const calculateEmi: CalculatorEngine<EmiInput, EmiResult> = ({
     tenureMonths: n,
     monthlyRate: round2(r * 100),
     emi,
-    totalPayment: round2(totalPayment),
-    totalInterest: round2(totalInterest),
+    totalPayment: totalPaymentCents / 100,
+    totalInterest: totalInterestCents / 100,
     schedule,
   }
 }

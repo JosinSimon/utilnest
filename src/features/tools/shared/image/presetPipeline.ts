@@ -4,7 +4,7 @@ import type {
   ProcessedOutput,
   ProcessingReport,
 } from "./types"
-import { decodeImage, makeRenderHandle } from "./driver"
+import { canvasToBlob, decodeImage } from "./driver"
 import { compressToTarget, type CompressOutcome } from "./compressor"
 import { validateCandidate, type ImageCandidate } from "./validator"
 import { dimensionsToPixels } from "./geometry"
@@ -66,8 +66,13 @@ export async function runPresetPipeline(
 
   // 2) Resize ONCE to the exact preset dimensions (never more).
   const { width, height } = presetPixels(preset, dpi)
-  const handle = makeRenderHandle(decoded, width, height)
-  const compressInput = handle.asCompressInput(width, height)
+  const render = () => renderContainCanvas(decoded.bitmapCarrier, decoded.sourceWidth, decoded.sourceHeight, width, height)
+  const compressInput = {
+    encodeJpeg: (quality: number) => canvasToBlob(render(), "image/jpeg", quality),
+    encodePng: () => canvasToBlob(render(), "image/png"),
+    width,
+    height,
+  }
 
   // 3) Compress to the preset KB range. allowDownscale=false is guaranteed by
   //    the preset registry — dimensions are never silently shrunk to fit size.
@@ -84,7 +89,7 @@ export async function runPresetPipeline(
   const outcome = await compressToTarget(compressInput, target)
 
   // 4) Validate the FINAL output against the preset.
-  const backgroundBrightness = sampleBackgroundBrightness(handle.toCanvas())
+  const backgroundBrightness = sampleBackgroundBrightness(render())
   const candidate: ImageCandidate = {
     width: outcome.width,
     height: outcome.height,
@@ -137,6 +142,29 @@ export async function runPresetPipeline(
 
 function formatKb(bytes: number): string {
   return `${(bytes / 1024).toFixed(1)} KB`
+}
+
+function renderContainCanvas(
+  source: CanvasImageSource,
+  sourceWidth: number,
+  sourceHeight: number,
+  targetWidth: number,
+  targetHeight: number,
+): HTMLCanvasElement {
+  const canvas = document.createElement("canvas")
+  canvas.width = targetWidth
+  canvas.height = targetHeight
+  const ctx = canvas.getContext("2d")
+  if (!ctx) throw new Error("Could not acquire a 2D canvas context.")
+  ctx.fillStyle = "#ffffff"
+  ctx.fillRect(0, 0, targetWidth, targetHeight)
+  const scale = Math.min(targetWidth / sourceWidth, targetHeight / sourceHeight)
+  const drawW = Math.max(1, Math.round(sourceWidth * scale))
+  const drawH = Math.max(1, Math.round(sourceHeight * scale))
+  const x = Math.round((targetWidth - drawW) / 2)
+  const y = Math.round((targetHeight - drawH) / 2)
+  ctx.drawImage(source, x, y, drawW, drawH)
+  return canvas
 }
 
 export type { CompressOutcome }

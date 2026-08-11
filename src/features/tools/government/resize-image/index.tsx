@@ -23,13 +23,29 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
   const [output, setOutput] = useState<ResizeToolOutput | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const [sourceDims, setSourceDims] = useState<{ width: number; height: number } | null>(null)
+  const [keepAspect, setKeepAspect] = useState(true)
   const downloadUrlRef = useRef<string | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
 
-  const onFile = useCallback((f: File | undefined) => {
+  const setDimension = (key: "width" | "height", value: string) => {
+    setForm((f) => {
+      const next = { ...f, [key]: value }
+      if (keepAspect && sourceDims) {
+        const n = Number(value)
+        if (Number.isFinite(n) && n > 0) {
+          if (key === "width") next.height = String(Math.max(1, Math.round(n * (sourceDims.height / sourceDims.width))))
+          else next.width = String(Math.max(1, Math.round(n * (sourceDims.width / sourceDims.height))))
+        }
+      }
+      return next
+    })
+  }
+
+  const onFile = useCallback(async (f: File | undefined) => {
     if (!f) return
     setFile(f)
     setOutput(null)
@@ -38,7 +54,10 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
       URL.revokeObjectURL(downloadUrlRef.current)
       downloadUrlRef.current = null
     }
-    setPreview(URL.createObjectURL(f))
+    const url = URL.createObjectURL(f)
+    setPreview(url)
+    const bitmap = await createImageBitmap(f)
+    setSourceDims({ width: bitmap.width, height: bitmap.height })
   }, [])
 
   const resize = useCallback(async () => {
@@ -115,7 +134,7 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
                 type="number"
                 min={1}
                 value={form.width}
-                onChange={(e) => set("width", e.target.value)}
+                onChange={(e) => setDimension("width", e.target.value)}
               />
             </div>
             <div className="space-y-1.5">
@@ -125,10 +144,19 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
                 type="number"
                 min={1}
                 value={form.height}
-                onChange={(e) => set("height", e.target.value)}
+                onChange={(e) => setDimension("height", e.target.value)}
               />
             </div>
           </div>
+
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              checked={keepAspect}
+              onChange={(e) => setKeepAspect(e.target.checked)}
+            />
+            Keep aspect ratio when editing one dimension
+          </label>
 
           <div className="space-y-2">
             <Label>Output format</Label>

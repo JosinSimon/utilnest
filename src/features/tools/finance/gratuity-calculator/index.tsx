@@ -94,7 +94,7 @@ export default function GratuityCalculator({ tool }: { tool: ToolDefinition }) {
         </div>
 
         <div className="mt-6 rounded-xl border bg-secondary/40 p-5">
-          {result && result.totalYears > 0 ? (
+          {result && result.eligible ? (
             <div>
               <div className="flex items-baseline justify-between rounded-lg bg-primary px-4 py-3 text-primary-foreground">
                 <dt className="text-sm font-medium">Gratuity amount</dt>
@@ -131,6 +131,10 @@ export default function GratuityCalculator({ tool }: { tool: ToolDefinition }) {
                 </div>
               </dl>
             </div>
+          ) : result?.errorMessage ? (
+            <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700">
+              {result.errorMessage}
+            </p>
           ) : (
             <p className="text-sm text-muted-foreground">
               Enter your last salary and years of service above to see the gratuity.

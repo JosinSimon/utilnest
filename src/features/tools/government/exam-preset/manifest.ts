@@ -8,15 +8,15 @@ export const definition: ToolDefinition = {
   path: "government/exam-preset",
 
   shortDescription:
-    "Apply a ready-made exam preset to your photograph or signature — exact pixels and file size for SSC, NEET and IBPS in one click.",
+    "Apply a ready-made exam preset to your photograph or signature — exact pixels and file size for SSC, NEET, IBPS, UPSC, JEE, GATE and CUET workflows in one click.",
   longDescription:
-    "Skip the manual resizing: this tool applies a complete official exam preset (dimensions + file-size range + format) to your photo or signature automatically. It processes the file in-browser and validates the result against the preset before you download.",
+    "Skip the manual resizing: this tool applies an exam preset (dimensions + file-size range + format) to your photo or signature automatically. Verified presets are marked as such; UPSC, JEE, GATE and CUET placeholders are clearly marked awaiting official verification. It processes the file in-browser and validates the result against the preset before you download.",
   schemaType: "Utility",
 
   sections: [
     {
       heading: "Preset in one tap",
-      body: "Choose SSC CGL, NEET UG or IBPS PO/Clerk and a photo or signature preset. The tool handles resize + compression + validation for you.",
+      body: "Choose SSC CGL, NEET UG, IBPS PO/Clerk, UPSC CSE, JEE Main, GATE or CUET UG and a photo or signature preset. The tool handles resize + compression + validation for you.",
     },
     {
       heading: "Spec-aware output",

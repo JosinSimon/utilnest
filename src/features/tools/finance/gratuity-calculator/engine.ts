@@ -14,6 +14,8 @@ export interface GratuityResult {
   totalYears: number
   gratuity: number
   capped: boolean
+  eligible: boolean
+  errorMessage?: string
 }
 
 const GRATUITY_CAP = 2000000
@@ -45,6 +47,20 @@ export const calculateGratuity: CalculatorEngine<GratuityInput, GratuityResult> 
 
   const lastMonthlySalary = basic + da
 
+  const totalServiceMonths = years * 12 + months
+  if (totalServiceMonths < 60) {
+    return {
+      lastBasic: basic,
+      lastDa: da,
+      lastMonthlySalary: round2(lastMonthlySalary),
+      totalYears: 0,
+      gratuity: 0,
+      capped: false,
+      eligible: false,
+      errorMessage: "Gratuity is generally payable only after five years of continuous service.",
+    }
+  }
+
   // completed years, rounding 6+ months up to a full year
   const completedYears = months >= 6 ? years + 1 : years
 
@@ -58,6 +74,7 @@ export const calculateGratuity: CalculatorEngine<GratuityInput, GratuityResult> 
     totalYears: completedYears,
     gratuity: round2(Math.min(gratuity, GRATUITY_CAP)),
     capped,
+    eligible: true,
   }
 }
 

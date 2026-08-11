@@ -28,8 +28,15 @@ describe("gratuity engine", () => {
     expect(r.gratuity).toBe(2000000)
   })
 
-  it("handles zero service", () => {
+  it("returns zero for zero salary/service", () => {
     const r = calculateGratuity({ lastBasic: 30000, lastDa: 0, yearsOfService: 0, monthsOfService: 0 })
     expect(r.gratuity).toBe(0)
+  })
+
+  it("marks employees below five years of service as ineligible", () => {
+    const r = calculateGratuity({ lastBasic: 30000, lastDa: 0, yearsOfService: 4, monthsOfService: 11 })
+    expect(r.eligible).toBe(false)
+    expect(r.gratuity).toBe(0)
+    expect(r.errorMessage).toMatch(/five years/i)
   })
 })

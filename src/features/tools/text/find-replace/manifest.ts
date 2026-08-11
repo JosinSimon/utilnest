@@ -10,7 +10,7 @@ export const definition: ToolDefinition = {
   shortDescription:
     "Find and replace text instantly with optional case-sensitivity and whole-word matching. Free, offline tool that never uploads your text.",
   longDescription:
-    "Replace words or phrases across any body of text in one click. Supports whole-word-only matches, case-sensitive search and handles literal text (no regex escaping needed). Perfect for cleaning up lists, renaming terms, reformatting copy and editing drafts. All processing happens in your browser — your content never leaves your device.",
+    "Replace words or phrases across any body of text in one click. Supports whole-word-only matches, case-sensitive search, literal text and optional regex mode. Perfect for cleaning up lists, renaming terms, reformatting copy and editing drafts. All processing happens in your browser — your content never leaves your device.",
   schemaType: "Utility",
 
   sections: [
@@ -19,8 +19,8 @@ export const definition: ToolDefinition = {
       body: "Rename a repeated term across a document, fix a recurring typo, standardise formatting or clean up copied content — without manually scanning every line.",
     },
     {
-      heading: "Literal text search",
-      body: "The search term is always treated as plain text, so special characters like periods, asterisks and brackets are matched literally rather than as regex.",
+      heading: "Literal or regex search",
+      body: "By default the search term is treated as plain text, so special characters match literally. Turn on regex mode when you intentionally want regular-expression matching.",
     },
     {
       heading: "Whole word option",

@@ -60,16 +60,17 @@ export default function FindReplace({ tool }: { tool: ToolDefinition }) {
   const [replace, setReplace] = useState("")
   const [caseSensitive, setCaseSensitive] = useState(false)
   const [wholeWord, setWholeWord] = useState(false)
+  const [isRegex, setIsRegex] = useState(false)
   const [copied, setCopied] = useState(false)
 
   const { output, matches } = useMemo(
-    () => findReplace({ text, find, replace, caseSensitive, wholeWord }),
-    [text, find, replace, caseSensitive, wholeWord],
+    () => findReplace({ text, find, replace, caseSensitive, wholeWord, isRegex }),
+    [text, find, replace, caseSensitive, wholeWord, isRegex],
   )
 
   const segments = useMemo(
-    () => matchSegments(text, find, caseSensitive, wholeWord),
-    [text, find, caseSensitive, wholeWord],
+    () => matchSegments(text, find, caseSensitive, wholeWord, isRegex),
+    [text, find, caseSensitive, wholeWord, isRegex],
   )
 
   const onCopy = async () => {
@@ -133,6 +134,11 @@ export default function FindReplace({ tool }: { tool: ToolDefinition }) {
             onChange={() => setWholeWord((v) => !v)}
             label="Whole word only"
           />
+          <Toggle
+            checked={isRegex}
+            onChange={() => setIsRegex((v) => !v)}
+            label="Regex mode"
+          />
         </div>
 
         {find && text && (
@@ -159,7 +165,8 @@ export default function FindReplace({ tool }: { tool: ToolDefinition }) {
               {caseSensitive
                 ? "Case sensitive is ON — only exact-case matches are highlighted."
                 : "Case sensitive is OFF — all case variants match."}{" "}
-              {wholeWord ? "Whole word only is ON." : "Whole word only is OFF."}
+              {wholeWord ? "Whole word only is ON." : "Whole word only is OFF."}{" "}
+              {isRegex ? "Regex mode is ON — invalid patterns safely match nothing." : "Regex mode is OFF — special characters match literally."}
             </p>
           </div>
         )}

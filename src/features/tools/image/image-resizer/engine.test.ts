@@ -30,4 +30,9 @@ describe("resolveDimensions", () => {
     expect(r.width).toBeGreaterThanOrEqual(1)
     expect(r.height).toBeGreaterThanOrEqual(1)
   })
+
+  it("clamps tiny fractional dimensions to at least 1px", () => {
+    expect(resolveDimensions(1200, 800, { width: 0.4 })).toEqual({ width: 1, height: 1 })
+    expect(resolveDimensions(1200, 800, { width: 0.4, height: 0.4 })).toEqual({ width: 1, height: 1 })
+  })
 })

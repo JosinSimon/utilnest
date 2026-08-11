@@ -62,6 +62,13 @@ describe("EMI calculator engine", () => {
     expect(first.payment).toBeCloseTo(r.emi, 2)
   })
 
+  it("keeps every rounded schedule row internally reconciled", () => {
+    const r = calculateEmi({ principal: 987654, annualRate: 7.37, years: 3, months: 5 })
+    for (const row of r.schedule) {
+      expect(Number((row.interest + row.principal).toFixed(2))).toBe(row.payment)
+    }
+  })
+
   it("produces the same result deterministically", () => {
     const input = { principal: 300000, annualRate: 8, years: 7, months: 4 }
     expect(calculateEmi(input)).toEqual(calculateEmi(input))

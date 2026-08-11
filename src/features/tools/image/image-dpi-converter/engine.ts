@@ -26,6 +26,10 @@ function readU16(data: Uint8Array, off: number): number {
   return (data[off] << 8) | data[off + 1]
 }
 
+function readU32(data: Uint8Array, off: number): number {
+  return data[off] * 0x1000000 + ((data[off + 1] << 16) | (data[off + 2] << 8) | data[off + 3])
+}
+
 function writeU16(data: Uint8Array, off: number, v: number): void {
   const u = v & 0xffff
   data[off] = (u >> 8) & 0xff
@@ -243,7 +247,7 @@ export function readDpi(data: Uint8Array): DpiInfo | undefined {
   if (fmt === "png") {
     const off = findPhysDataOffset(data)
     if (off === -1) return { format: "png", dpi: 0 }
-    const ppiX = (data[off] << 24) | (data[off + 1] << 16) | (data[off + 2] << 8) | data[off + 3]
+    const ppiX = readU32(data, off)
     return { format: "png", dpi: Math.round(ppiX * 0.0254) }
   }
   return undefined

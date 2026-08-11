@@ -50,7 +50,7 @@ export const definition: ToolDefinition = {
     {
       question: "What size should Aadhaar/PAN photos be?",
       answer:
-        "The commonly cited reference is a passport-size photo (3.5×3.5 cm for PAN, 3.5×4.5 cm for Aadhaar) on white background. Presets are marked 'awaiting verification' pending official confirmation.",
+        "The commonly cited reference is a passport-size photo (3.5×2.5 cm for PAN, 3.5×4.5 cm for Aadhaar) on white background. A PAN signature preset is also available. Presets are marked 'awaiting verification' pending official confirmation.",
     },
   ],
   howTo: [

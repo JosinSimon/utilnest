@@ -33,16 +33,10 @@ export function dedupeLines(text: string, opts: Partial<Omit<DedupeInput, "text"
   for (const raw of lines) {
     const compareWith = trim ? raw.trim() : raw
     let key = compareWith
-    if (caseInsensitive) key = key.toLowerCase()
-    if (compareWith === "") {
-      // Preserve blank lines once; skip repeats.
-      if (seen.has("")) removedCount++
-      else {
-        seen.add("")
-        kept.push(raw)
-      }
-      continue
+    if (trim && compareWith === "") {
+      key = raw === "" ? "\u0000empty-line" : `\u0000whitespace-line:${raw}`
     }
+    if (caseInsensitive) key = key.toLowerCase()
     if (seen.has(key)) {
       removedCount++
     } else {
