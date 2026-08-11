@@ -1,12 +1,12 @@
-export const SITE_URL = "https://toolsonway.in"
+export const SITE_URL = "https://utilnest.in"
 
 export const site = {
-  name: "ToolsOnway",
-  domain: "toolsonway.in",
+  name: "UtilNest",
+  domain: "utilnest.in",
   url: SITE_URL,
   tagline: "Free online tools that run in your browser",
   description:
-    "Hundreds of free online utilities for students, professionals and businesses. Calculators, converters, image tools, PDF tools and more. Your files never leave your device.",
+    "Free everyday online tools and utilities for students, professionals, and businesses. Calculators, converters, PDF tools, image resizers, GST invoices, and more. 100% private, fast, and local.",
   locale: "en_IN",
   defaultLanguage: "en-IN",
   trustLine: "Your files never leave your device.",
@@ -15,7 +15,7 @@ export const site = {
   gtmId: "",
   gaId: "",
   clarityId: "",
-  legalEmail: "support@toolsonway.in",
+  legalEmail: "support@utilnest.in",
 } as const
 
 export const toolPrefix = "Free Online" as const
