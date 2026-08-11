@@ -5,10 +5,6 @@ import type { StaticRoute } from "./static-routes"
 import {
   toolSeoData,
   categorySeoData,
-  breadcrumbJsonLd,
-  softwareJsonLd,
-  faqJsonLd,
-  howToJsonLd,
   websiteJsonLd,
   organizationJsonLd,
 } from "@/components/seo/seo-data"
@@ -60,7 +56,7 @@ export function headForRoute(route: StaticRoute): string {
         title: `Search Tools | ${site.name}`,
         description: "Search every free online tool instantly.",
         canonical: `${site.url}/search`,
-        robots: "index, follow",
+        robots: "noindex, follow",
         og: {
           type: "website",
           title: `Search Tools | ${site.name}`,
@@ -74,31 +70,14 @@ export function headForRoute(route: StaticRoute): string {
       const category = route.categorySlug ? categoryBySlug(route.categorySlug) : undefined
       if (!category) return headJsonLdOnly(route)
       const data = categorySeoData(category)
-      const jsonLd = breadcrumbJsonLd([
-        { label: "Home", url: site.url },
-        { label: "Tools", url: `${site.url}/tools` },
-        { label: category.name, url: `${site.url}/category/${category.slug}` },
-      ])
-      return headHtml({ ...data, jsonLd })
+      return headHtml(data)
     }
 
     case "tool": {
       const tool = route.toolSlug ? getToolBySlug(route.toolSlug) : undefined
       if (!tool) return headJsonOnly(route)
       const data = toolSeoData(tool)
-      return headHtml(
-        data,
-        [
-          breadcrumbJsonLd([
-            { label: "Home", url: site.url },
-            { label: "Tools", url: `${site.url}/tools` },
-            { label: tool.name, url: `${site.url}/category/${tool.category}/${tool.slug}` },
-          ]),
-          softwareJsonLd(tool),
-          faqJsonLd(tool.faq),
-          howToJsonLd(tool.howTo),
-        ],
-      )
+      return headHtml(data)
     }
 
     case "legal":

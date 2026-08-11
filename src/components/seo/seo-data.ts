@@ -1,4 +1,5 @@
 import type { ToolDefinition, Category, FaqItem, HowToStep } from "@/data/types"
+import { categoryBySlug } from "@/data/categories"
 import {
   toolCanonicalUrl,
   seoTitleFor,
@@ -17,14 +18,15 @@ export interface SeoData {
   canonical: string
   og: { type: string; title: string; description: string; image: string; url: string }
   keywords?: string[]
-  robots?: "index, follow" | "noindex, nofollow"
+  robots?: "index, follow" | "noindex, nofollow" | "noindex, follow"
   jsonLd?: JsonLd | JsonLd[]
 }
 
 export function toolSeoData(tool: ToolDefinition): SeoData {
+  const categoryName = categoryBySlug(tool.category)?.name ?? tool.category
   const breadcrumbs = [
     { label: "Home", url: site.url },
-    { label: tool.category, url: `${site.url}/category/${tool.category}` },
+    { label: categoryName, url: `${site.url}/category/${tool.category}` },
     { label: tool.name, url: toolCanonicalUrl(tool) },
   ]
 

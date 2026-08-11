@@ -1,5 +1,6 @@
 import { useEffect } from "react"
 import type { SeoData } from "./seo-data"
+import { site } from "@/data/site"
 
 function upsertMeta(attr: "name" | "property", key: string, content: string) {
   let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${key}"]`)
@@ -56,7 +57,7 @@ export function Seo({ data }: { data: SeoData }) {
     upsertMeta("property", "og:type", data.og.type)
     upsertMeta("property", "og:url", data.og.url)
     upsertMeta("property", "og:image", data.og.image)
-    upsertMeta("property", "og:site_name", "ToolsOnway")
+    upsertMeta("property", "og:site_name", site.name)
     upsertMeta("name", "twitter:card", "summary_large_image")
     upsertMeta("name", "twitter:title", data.og.title)
     upsertMeta("name", "twitter:description", data.og.description)

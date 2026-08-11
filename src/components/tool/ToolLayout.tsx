@@ -10,16 +10,9 @@ import { TrustBanner } from "./TrustBanner"
 import { AdSlot } from "@/components/ads/AdSlot"
 import { Seo } from "@/components/seo/Seo"
 import { ToolCard } from "@/components/ToolCard"
-import {
-  toolSeoData,
-  breadcrumbJsonLd,
-  softwareJsonLd,
-  faqJsonLd,
-  howToJsonLd,
-} from "@/components/seo/seo-data"
+import { toolSeoData } from "@/components/seo/seo-data"
 import { toolBreadcrumbs } from "@/data/derive"
 import { formatDate } from "@/lib/format"
-import { site } from "@/data/site"
 
 interface ToolLayoutProps {
   tool: ToolDefinition
@@ -34,27 +27,10 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
 
   const seoData = toolSeoData(tool)
   const breadcrumbs = toolBreadcrumbs(tool)
-  const baseJsonLd = Array.isArray(seoData.jsonLd) ? seoData.jsonLd : []
 
   return (
     <>
-      <Seo
-        data={{
-          ...seoData,
-          jsonLd: [
-            ...baseJsonLd,
-            breadcrumbJsonLd(
-              breadcrumbs.map((b) => ({
-                label: b.label,
-                url: `${site.url}${b.href}`,
-              })),
-            ),
-            softwareJsonLd(tool),
-            faqJsonLd(tool.faq),
-            howToJsonLd(tool.howTo, tool.name),
-          ].filter((x): x is Record<string, unknown> => Boolean(x)),
-        }}
-      />
+      <Seo data={seoData} />
 
       <article className="mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8">
         <div className="py-6">

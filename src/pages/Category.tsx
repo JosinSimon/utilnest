@@ -4,9 +4,8 @@ import { getToolsByCategory, getPopularTools } from "@/data/registry"
 import { ToolCard } from "@/components/ToolCard"
 import { Breadcrumbs } from "@/components/Breadcrumbs"
 import { Seo } from "@/components/seo/Seo"
-import { categorySeoData, breadcrumbJsonLd, faqJsonLd } from "@/components/seo/seo-data"
+import { categorySeoData } from "@/components/seo/seo-data"
 import { categoryBreadcrumbs } from "@/data/derive"
-import { site } from "@/data/site"
 import { getIcon } from "@/components/icons"
 import { AdSlot } from "@/components/ads/AdSlot"
 import { ShieldCheck, ChevronRight } from "lucide-react"
@@ -41,17 +40,7 @@ export function CategoryPage() {
 
   return (
     <>
-      <Seo
-        data={{
-          ...categorySeoData(category, categoryFaqs),
-          jsonLd: [
-            breadcrumbJsonLd(
-              breadcrumbs.map((b) => ({ label: b.label, url: `${site.url}${b.href}` })),
-            ),
-            faqJsonLd(categoryFaqs),
-          ].filter((x): x is Record<string, unknown> => Boolean(x)),
-        }}
-      />
+      <Seo data={categorySeoData(category, categoryFaqs)} />
 
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="py-6">
