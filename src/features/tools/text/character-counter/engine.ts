@@ -18,17 +18,12 @@ export interface CharacterStats {
 
 /** Counts digits (ASCII and non-ASCII numerals). */
 function digitsIn(text: string): number {
-  return (text.match(/\p{N}/gu) ?? []).length
+  return graphemes(text).filter((g) => /\p{N}/u.test(g)).length
 }
 
 /** Counts letters across all scripts. */
 function lettersIn(text: string): number {
-  return (text.match(/\p{L}/gu) ?? []).length
-}
-
-/** Counts punctuation/symbols (everything except letters, digits and whitespace). */
-function punctuationIn(text: string): number {
-  return (text.match(/[^\p{L}\p{N}\s]/gu) ?? []).length
+  return graphemes(text).filter((g) => /\p{L}/u.test(g)).length
 }
 
 /**
@@ -38,12 +33,13 @@ function punctuationIn(text: string): number {
  * digits, punctuation and whitespace separately for a full breakdown.
  */
 export const countCharacters: TextEngine<CharacterInput, CharacterStats> = ({ text }) => {
-  const total = graphemes(text).length
+  const allGraphemes = graphemes(text)
+  const total = allGraphemes.length
   const withoutSpaces = countNonWhitespace(text)
-  const withoutPunctuation = total - punctuationIn(text)
+  const withoutPunctuation = allGraphemes.filter((g) => !/[^\p{L}\p{N}\s]/u.test(g)).length
   const words = text.split(/\s+/).filter((t) => /[\p{L}\p{N}]/u.test(t)).length
   const lines = text.length === 0 ? 0 : text.split(/\r\n?|\n/).length
-  const unique = new Set(graphemes(text)).size
+  const unique = new Set(allGraphemes).size
 
   return ok({
     characterCount: total,

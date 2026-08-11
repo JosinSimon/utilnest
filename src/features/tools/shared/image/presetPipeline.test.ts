@@ -15,9 +15,9 @@ describe("presetPipeline presetPixels", () => {
     const px = presetPixels(p, 300)
     const expected = dimensionsToPixels(p.dimensions, 300)
     expect(px).toEqual(expected)
-    // 3.5cm at 300 dpi == 3.5/2.54*300 ≈ 413
+    // 3.5cm at 300 dpi ≈ 413, 4.5cm at 300 dpi ≈ 531
     expect(Math.round(px.width)).toBe(413)
-    expect(Math.round(px.height)).toBe(413)
+    expect(Math.round(px.height)).toBe(531)
   })
 
   it("scales with DPI", () => {
@@ -30,10 +30,10 @@ describe("presetPipeline presetPixels", () => {
 
 describe("new presets added for phase 2 tools", () => {
   it("includes passport, aadhaar and pan presets", () => {
-    for (const id of ["passport-photo", "aadhaar-photo", "pan-photo"]) {
+    for (const id of ["passport-photo", "aadhaar-photo", "pan-photo", "pan-signature"]) {
       const p = getPresetById(id)
       expect(p).toBeDefined()
-      expect(p!.verified).toBe(false)
+      expect(p!.verified).toBe(true)
       expect(p!.allowDownscale).toBe(false)
     }
   })

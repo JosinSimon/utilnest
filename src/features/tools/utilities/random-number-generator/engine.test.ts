@@ -37,6 +37,12 @@ describe("Random Number Generator Engine", () => {
     })
   })
 
+  it("rejects impossible unique decimal requests", () => {
+    const res = generateRandomNumbers({ min: 0, max: 1, count: 50, unique: true, mode: "decimal", decimals: 1 })
+    expect(res.isValid).toBe(false)
+    expect(res.errorMessage).toContain("Cannot generate 50 unique numbers")
+  })
+
   it("rejects min > max", () => {
     const res = generateRandomNumbers({ min: 10, max: 5, count: 1, unique: false, mode: "integer" })
     expect(res.isValid).toBe(false)

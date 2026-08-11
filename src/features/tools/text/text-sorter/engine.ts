@@ -23,7 +23,22 @@ export function sortLines(text: string, mode: SortMode): string {
   // "Apple\napple" ordering rather than putting the lowercase word first.
   const alpha = (a: string, b: string) => a.localeCompare(b, undefined, { sensitivity: "base" })
   const lengthA = (a: string, b: string) => a.length - b.length
-  const numeric = (a: string, b: string) => Number(a.trim()) - Number(b.trim())
+
+  const parseNum = (s: string): number | null => {
+    const trimmed = s.trim()
+    if (trimmed === "") return null
+    const n = Number(trimmed)
+    return Number.isFinite(n) ? n : null
+  }
+
+  const numeric = (a: string, b: string): number => {
+    const numA = parseNum(a)
+    const numB = parseNum(b)
+    if (numA !== null && numB !== null) return numA - numB
+    if (numA !== null) return -1
+    if (numB !== null) return 1
+    return alpha(a, b)
+  }
 
   let sorted: string[]
   switch (mode) {

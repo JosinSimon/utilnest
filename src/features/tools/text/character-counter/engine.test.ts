@@ -34,10 +34,12 @@ describe("character-counter engine", () => {
     expect(r.letterCount).toBe(4)
   })
 
-  it("counts an emoji as a single character", () => {
-    const r = stats("👍")
+  it("counts an emoji as a single character without negative withoutPunctuation count", () => {
+    const r = stats("👨‍👩‍👧‍👦")
     expect(r.characterCount).toBe(1)
     expect(r.letterCount).toBe(0)
+    expect(r.characterCountWithoutPunctuation).toBeGreaterThanOrEqual(0)
+    expect(r.characterCountWithoutPunctuation).toBe(0)
   })
 
   it("counts digits and punctuation", () => {

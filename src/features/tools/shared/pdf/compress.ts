@@ -31,8 +31,11 @@ export async function compressPdf(
   const out = await PDFDocument.create()
   for (const page of rendered) {
     const jpg = await embedJpegDataUrl(out, page.dataUrl)
-    const p = out.addPage([page.width, page.height])
-    p.drawImage(jpg, { x: 0, y: 0, width: page.width, height: page.height })
+    const scale = opts.scale && opts.scale > 0 ? opts.scale : 1
+    const physWidth = page.width / scale
+    const physHeight = page.height / scale
+    const p = out.addPage([physWidth, physHeight])
+    p.drawImage(jpg, { x: 0, y: 0, width: physWidth, height: physHeight })
   }
   return out.save()
 }

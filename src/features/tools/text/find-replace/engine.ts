@@ -6,6 +6,7 @@ export interface FindReplaceInput {
   replace: string
   caseSensitive: boolean
   wholeWord: boolean
+  isRegex?: boolean
 }
 
 export interface FindReplaceResult {
@@ -22,12 +23,21 @@ function escapeRegex(s: string): string {
  * Builds the matcher regex for the current find term + options. Exported so the
  * UI can highlight which words match under the present settings.
  */
-export function buildMatcher(find: string, caseSensitive: boolean, wholeWord: boolean): RegExp | null {
+export function buildMatcher(
+  find: string,
+  caseSensitive: boolean,
+  wholeWord: boolean,
+  isRegex = false,
+): RegExp | null {
   if (!find) return null
-  let pattern = escapeRegex(find)
-  if (wholeWord) pattern = `\\b${pattern}\\b`
-  const flags = caseSensitive ? "g" : "gi"
-  return new RegExp(pattern, flags)
+  try {
+    let pattern = isRegex ? find : escapeRegex(find)
+    if (wholeWord) pattern = `\\b${pattern}\\b`
+    const flags = caseSensitive ? "g" : "gi"
+    return new RegExp(pattern, flags)
+  } catch {
+    return null
+  }
 }
 
 /**
@@ -39,8 +49,9 @@ export function matchSegments(
   find: string,
   caseSensitive: boolean,
   wholeWord: boolean,
+  isRegex = false,
 ): { text: string; matched: boolean }[] {
-  const regex = buildMatcher(find, caseSensitive, wholeWord)
+  const regex = buildMatcher(find, caseSensitive, wholeWord, isRegex)
   if (!regex) return [{ text, matched: false }]
 
   const segments: { text: string; matched: boolean }[] = []
@@ -62,8 +73,8 @@ export function matchSegments(
  * toggles the regex `i` flag.
  */
 export function findReplace(input: FindReplaceInput): FindReplaceResult {
-  const { caseSensitive, wholeWord } = input
-  const regex = buildMatcher(input.find, caseSensitive, wholeWord)
+  const { caseSensitive, wholeWord, isRegex = false } = input
+  const regex = buildMatcher(input.find, caseSensitive, wholeWord, isRegex)
 
   if (!regex) return { output: input.text, matches: 0 }
 

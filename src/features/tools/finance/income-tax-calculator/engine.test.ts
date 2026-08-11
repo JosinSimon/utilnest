@@ -155,6 +155,15 @@ describe("income tax calculator engine (FY 2026-27)", () => {
     expect(r.rebate).toBeGreaterThan(0)
   })
 
+  it("applies Section 87A marginal rebate when taxable income slightly exceeds ₹12L in new regime", () => {
+    // Taxable income = 1200000 + 75000 (std ded) + 100 = 1275100 gross -> 1200100 taxable
+    const r = calculateIncomeTax({ annualIncome: 1275100, newRegime: true, deductions: 0 })
+    expect(r.taxableIncome).toBe(1200100)
+    // Tax payable before cess should be capped at excess (₹100)
+    expect(r.taxAfterRebate).toBe(100)
+    expect(r.totalTax).toBe(104) // 100 + 4% cess
+  })
+
   it("charges tax above ₹12L in the new regime", () => {
     const r = calculateIncomeTax({ annualIncome: 1500000, newRegime: true, deductions: 0 })
     expect(r.taxableIncome).toBe(1425000)

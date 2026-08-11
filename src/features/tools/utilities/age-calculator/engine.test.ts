@@ -38,6 +38,14 @@ describe("Age Calculator Engine", () => {
     expect(res.nextBirthday.daysRemaining).toBe(5)
   })
 
+  it("handles month-end to next month start edge cases without negative days (e.g. Jan 31 to Mar 1)", () => {
+    const res = calculateAge("2024-01-31", "2024-03-01")
+    expect(res.isValid).toBe(true)
+    expect(res.years).toBe(0)
+    expect(res.months).toBe(1)
+    expect(res.days).toBe(1)
+  })
+
   it("rejects future birth date relative to target date", () => {
     const res = calculateAge("2030-01-01", "2026-08-10")
     expect(res.isValid).toBe(false)

@@ -26,6 +26,19 @@ describe("Date Difference Calculator Engine", () => {
     expect(res.totalDays).toBe(10)
   })
 
+  it("handles month-end to next month start edge cases without negative days (Jan 31 to Mar 1)", () => {
+    const res = calculateDateDiff({
+      mode: "diff",
+      startDate: "2024-01-31",
+      endDate: "2024-03-01",
+      includeEndDate: false,
+    })
+    expect(res.isValid).toBe(true)
+    expect(res.years).toBe(0)
+    expect(res.months).toBe(1)
+    expect(res.days).toBe(1)
+  })
+
   it("adds days to a starting date", () => {
     const res = calculateDateDiff({
       mode: "add_subtract",

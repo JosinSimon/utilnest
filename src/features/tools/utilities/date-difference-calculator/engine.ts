@@ -67,28 +67,33 @@ export function calculateDateDiff(input: DateDiffInput): DateDiffResult {
     }
 
     const startYear = start.getFullYear()
-    const startMonth = start.getMonth()
-    const startDay = start.getDate()
-
     const endYear = end.getFullYear()
-    const endMonth = end.getMonth()
-    const endDay = end.getDate()
+
+    function addMonthsClamped(baseDate: Date, count: number): Date {
+      const y = baseDate.getFullYear()
+      const m = baseDate.getMonth()
+      const d = baseDate.getDate()
+      const totalM = m + count
+      const targetYear = y + Math.floor(totalM / 12)
+      const targetMonth = ((totalM % 12) + 12) % 12
+      const maxDays = getDaysInMonth(targetYear, targetMonth)
+      const targetDay = Math.min(d, maxDays)
+      return new Date(targetYear, targetMonth, targetDay)
+    }
 
     let years = endYear - startYear
-    let months = endMonth - startMonth
-    let days = endDay - startDay
-
-    if (days < 0) {
-      months -= 1
-      const prevMonth = endMonth === 0 ? 11 : endMonth - 1
-      const prevYear = endMonth === 0 ? endYear - 1 : endYear
-      days += getDaysInMonth(prevYear, prevMonth)
-    }
-
-    if (months < 0) {
+    let d1 = addMonthsClamped(start, years * 12)
+    if (d1 > end) {
       years -= 1
-      months += 12
+      d1 = addMonthsClamped(start, years * 12)
     }
+
+    let months = 0
+    while (addMonthsClamped(d1, months + 1) <= end) {
+      months += 1
+    }
+    const d2 = addMonthsClamped(d1, months)
+    const days = Math.round((end.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24))
 
     const diffTime = end.getTime() - start.getTime()
     const totalDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))

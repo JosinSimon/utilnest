@@ -60,46 +60,43 @@ function getTimeZoneOffsetString(d: Date, timeZone: string): string {
   }
 }
 
+function getZoneOffsetMinutes(d: Date, timeZone: string): number {
+  try {
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+      hour12: false,
+    })
+    const parts: Record<string, number> = {}
+    formatter.formatToParts(d).forEach((p) => {
+      if (p.type !== "literal") parts[p.type] = parseInt(p.value, 10)
+    })
+    const hour = parts.hour === 24 ? 0 : parts.hour
+    const asUtc = Date.UTC(parts.year, parts.month - 1, parts.day, hour, parts.minute, parts.second)
+    return Math.round((asUtc - d.getTime()) / 60000)
+  } catch {
+    return 0
+  }
+}
+
 /** Construct Date object representing specified local time in source timezone */
 function parseLocalDateInZone(dateStr: string, timeStr: string, timeZone: string): Date {
   const [year, month, day] = dateStr.split("-").map(Number)
   const [hour, minute] = timeStr.split(":").map(Number)
 
-  // Use iterative approximation or Date.UTC to find UTC timestamp that yields requested local components in source timeZone
-  const baseUtc = Date.UTC(year, month - 1, day, hour, minute, 0)
-  const d = new Date(baseUtc)
+  const targetUtcMs = Date.UTC(year, month - 1, day, hour, minute, 0)
+  let guess = new Date(targetUtcMs)
 
-  // Adjust for target timezone offset difference
-  const getParts = (testDate: Date) => {
-    const fmt = new Intl.DateTimeFormat("en-US", {
-      timeZone,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-      hour12: false,
-    })
-    const res: Record<string, number> = {}
-    fmt.formatToParts(testDate).forEach((p) => {
-      if (p.type !== "literal") res[p.type] = parseInt(p.value, 10)
-    })
-    return res
+  for (let i = 0; i < 3; i++) {
+    const offsetMin = getZoneOffsetMinutes(guess, timeZone)
+    guess = new Date(targetUtcMs - offsetMin * 60000)
   }
-
-  const p = getParts(d)
-  // Compute difference in minutes between what testDate produced vs what user requested
-  const targetMinute = hour * 60 + minute
-  const producedHour = p.hour === 24 ? 0 : p.hour
-  const producedMinute = producedHour * 60 + p.minute
-
-  let diffMinutes = targetMinute - producedMinute
-  // Handle day wrap
-  if (diffMinutes > 720) diffMinutes -= 1440
-  if (diffMinutes < -720) diffMinutes += 1440
-
-  return new Date(d.getTime() + diffMinutes * 60000)
+  return guess
 }
 
 export function convertTimeZone(input: TimeZoneConvertInput): TimeZoneConvertResult {
@@ -153,7 +150,10 @@ export function convertTimeZone(input: TimeZoneConvertInput): TimeZoneConvertRes
     const sourceOffset = getTimeZoneOffsetString(sourceDate, sourceZone)
     const targetOffset = getTimeZoneOffsetString(sourceDate, targetZone)
 
-    // Calculate hour difference
+    const sourceOffsetMin = getZoneOffsetMinutes(sourceDate, sourceZone)
+    const targetOffsetMin = getZoneOffsetMinutes(sourceDate, targetZone)
+    const timeDifferenceHours = Math.round(((targetOffsetMin - sourceOffsetMin) / 60) * 100) / 100
+
     const targetParts = new Intl.DateTimeFormat("en-US", {
       timeZone: targetZone,
       year: "numeric",
@@ -174,7 +174,7 @@ export function convertTimeZone(input: TimeZoneConvertInput): TimeZoneConvertRes
       targetZoneName: targetZone,
       targetOffset,
       targetDateIso,
-      timeDifferenceHours: 0,
+      timeDifferenceHours,
       isValid: true,
     }
   } catch (err) {

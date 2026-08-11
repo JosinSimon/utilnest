@@ -22,6 +22,11 @@ describe("case-converter engine", () => {
     expect(apply("hello-world foo_bar", "title")).toBe("Hello World Foo Bar")
   })
 
+  it("preserves non-ASCII Unicode characters in title and camel cases", () => {
+    expect(apply("café au lait", "title")).toBe("Café Au Lait")
+    expect(apply("café au lait", "camel")).toBe("caféAuLait")
+  })
+
   it("sentence-cases only the first letter", () => {
     expect(apply("hELLO WORLD", "sentence")).toBe("Hello world")
   })

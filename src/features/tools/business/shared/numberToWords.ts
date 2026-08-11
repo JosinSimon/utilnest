@@ -32,10 +32,11 @@ function twoDigits(n: number): string {
 
 function threeDigits(n: number): string {
   if (n === 0) return ""
+  if (n >= 1000) return toWordsInternational(n)
   const h = Math.floor(n / 100)
   const rem = n % 100
   const parts: string[] = []
-  if (h > 0) parts.push(`${ONES[h]} Hundred`)
+  if (h > 0 && ONES[h]) parts.push(`${ONES[h]} Hundred`)
   if (rem > 0) parts.push(twoDigits(rem))
   return parts.join(" ")
 }
@@ -52,7 +53,7 @@ function toWordsIndian(n: number): string {
   const rem = Math.floor(n % 1_000)
 
   const parts: string[] = []
-  if (crore > 0) parts.push(`${threeDigits(crore)} Crore`)
+  if (crore > 0) parts.push(`${toWordsIndian(crore)} Crore`)
   if (lakh > 0) parts.push(`${twoDigits(lakh)} Lakh`)
   if (thousand > 0) parts.push(`${twoDigits(thousand)} Thousand`)
   if (rem > 0) parts.push(threeDigits(rem))

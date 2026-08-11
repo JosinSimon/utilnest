@@ -95,10 +95,23 @@ export function generateRandomNumbers(input: RandomInput): RandomResult {
   }
 
   // mode === "decimal"
+  const possibleUnique = Math.floor((max - min) * Math.pow(10, decimals)) + 1
+  if (unique && count > possibleUnique) {
+    return {
+      results: [],
+      formattedList: "",
+      isValid: false,
+      errorMessage: `Cannot generate ${count} unique numbers with ${decimals} decimal places in this range (max possible: ${possibleUnique}).`,
+    }
+  }
+
   const results: number[] = []
   const seen = new Set<number>()
+  let attempts = 0
+  const maxAttempts = count * 1000
 
-  while (results.length < count) {
+  while (results.length < count && attempts < maxAttempts) {
+    attempts++
     const val = getRandomFloat(min, max, decimals)
     if (unique) {
       if (!seen.has(val)) {
@@ -107,6 +120,15 @@ export function generateRandomNumbers(input: RandomInput): RandomResult {
       }
     } else {
       results.push(val)
+    }
+  }
+
+  if (results.length < count) {
+    return {
+      results: [],
+      formattedList: "",
+      isValid: false,
+      errorMessage: "Could not generate enough unique numbers within allowable iterations. Try decreasing count or increasing range/decimals.",
     }
   }
 

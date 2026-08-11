@@ -77,27 +77,40 @@ export function calculateAge(dobStr: string, targetStr?: string): AgeResult {
   const birthDay = dob.getDate()
 
   const targetYear = target.getFullYear()
-  const targetMonth = target.getMonth()
-  const targetDay = target.getDate()
-
   const isFeb29LeapBaby = birthMonth === 1 && birthDay === 29
 
+  // Calculate exact years, months, and days without day-borrowing artifacts
+  function addMonthsClamped(baseDate: Date, count: number): Date {
+    const y = baseDate.getFullYear()
+    const m = baseDate.getMonth()
+    const d = baseDate.getDate()
+    const totalM = m + count
+    let targetYear = y + Math.floor(totalM / 12)
+    let targetMonth = ((totalM % 12) + 12) % 12
+    const maxDays = getDaysInMonth(targetYear, targetMonth)
+    let targetDay = Math.min(d, maxDays)
+
+    // For Feb 29 leap babies in non-leap target years, birthday is March 1
+    if (isFeb29LeapBaby && targetMonth === 1 && d === 29 && !isLeapYear(targetYear)) {
+      targetMonth = 2
+      targetDay = 1
+    }
+    return new Date(targetYear, targetMonth, targetDay)
+  }
+
   let years = targetYear - birthYear
-  let months = targetMonth - birthMonth
-  let days = targetDay - birthDay
-
-  if (days < 0) {
-    months -= 1
-    // Previous month relative to target
-    const prevMonth = targetMonth === 0 ? 11 : targetMonth - 1
-    const prevMonthYear = targetMonth === 0 ? targetYear - 1 : targetYear
-    days += getDaysInMonth(prevMonthYear, prevMonth)
-  }
-
-  if (months < 0) {
+  let d1 = addMonthsClamped(dob, years * 12)
+  if (d1 > target) {
     years -= 1
-    months += 12
+    d1 = addMonthsClamped(dob, years * 12)
   }
+
+  let months = 0
+  while (addMonthsClamped(d1, months + 1) <= target) {
+    months += 1
+  }
+  const d2 = addMonthsClamped(d1, months)
+  const days = Math.round((target.getTime() - d2.getTime()) / (1000 * 60 * 60 * 24))
 
   // Total elapsed calculations
   const diffTime = target.getTime() - dob.getTime()

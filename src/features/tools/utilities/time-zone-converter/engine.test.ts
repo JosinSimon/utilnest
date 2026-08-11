@@ -12,6 +12,7 @@ describe("Time Zone Converter Engine", () => {
     expect(res.isValid).toBe(true)
     expect(res.sourceFormatted).toContain("2:30")
     expect(res.targetOffset).toContain("GMT-4") // EDT in August is UTC-4
+    expect(res.timeDifferenceHours).toBe(-9.5) // IST (+5.5) to EDT (-4) = -9.5h
   })
 
   it("converts to UTC correctly", () => {
@@ -23,6 +24,7 @@ describe("Time Zone Converter Engine", () => {
     })
     expect(res.isValid).toBe(true)
     expect(res.targetFormatted).toContain("12:00") // 5:30 AM IST = 12:00 AM UTC
+    expect(res.timeDifferenceHours).toBe(-5.5)
   })
 
   it("handles non-whole-hour offsets (Nepal NPT +5:45)", () => {

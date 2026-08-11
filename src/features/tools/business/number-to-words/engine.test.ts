@@ -25,4 +25,11 @@ describe("Number to Words Engine", () => {
     expect(result).not.toBeNull()
     expect(result?.words).toBe("Zero Rupees Only")
   })
+
+  test("handles large numbers (20 Billion / 2,000 Crore) without undefined output", () => {
+    const result = numberToWordsEngine({ value: 20000000000, system: "indian", mode: "plain" })
+    expect(result).not.toBeNull()
+    expect(result?.words).toBe("Two Thousand Crore")
+    expect(result?.words).not.toContain("undefined")
+  })
 })

@@ -31,12 +31,17 @@ function renderToCanvas(
   bitmapCarrier: CanvasImageSource,
   width: number,
   height: number,
+  format?: ConvertFormat,
 ): HTMLCanvasElement {
   const canvas = document.createElement("canvas")
   canvas.width = width
   canvas.height = height
   const ctx = canvas.getContext("2d")
   if (!ctx) throw new Error("Could not acquire 2D context.")
+  if (format === "jpeg") {
+    ctx.fillStyle = "#ffffff"
+    ctx.fillRect(0, 0, width, height)
+  }
   ctx.drawImage(bitmapCarrier, 0, 0, width, height)
   return canvas
 }
@@ -54,6 +59,7 @@ export function runImageConvert(input: ImageConvertInput): FileJob<ImageConvertO
         decoded.bitmapCarrier,
         decoded.sourceWidth,
         decoded.sourceHeight,
+        input.format,
       )
       const blob = await canvasToBlob(canvas, MIME[input.format], input.quality ?? 0.92)
       onProgress(1)

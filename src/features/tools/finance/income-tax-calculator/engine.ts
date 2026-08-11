@@ -162,8 +162,17 @@ export const calculateIncomeTax: CalculatorEngine<IncomeTaxInput, IncomeTaxResul
 
   const grossTax = taxOnSlabs(taxableIncome, regimeConfig.slabs)
 
-  const rebateEligible = taxableIncome <= regimeConfig.rebate.maxIncome
-  const rebate = rebateEligible ? Math.min(grossTax, regimeConfig.rebate.limit) : 0
+  let rebate = 0
+  if (taxableIncome <= regimeConfig.rebate.maxIncome) {
+    rebate = Math.min(grossTax, regimeConfig.rebate.limit)
+  } else if (newRegime) {
+    // Proviso to Section 87A under New Regime (Finance Act):
+    // Tax payable before cess shall not exceed the income in excess of maxIncome.
+    const excessIncome = taxableIncome - regimeConfig.rebate.maxIncome
+    if (grossTax > excessIncome) {
+      rebate = grossTax - excessIncome
+    }
+  }
   const taxAfterRebateUnrounded = Math.max(0, grossTax - rebate)
 
   const surchargeSlab = highestSurchargeSlab(taxableIncome, regimeConfig.surchargeSlabs)

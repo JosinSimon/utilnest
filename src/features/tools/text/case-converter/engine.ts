@@ -20,7 +20,7 @@ export interface CaseResult {
   output: string
 }
 
-const WORD_SPLIT = /[^A-Za-z0-9]+/
+const WORD_SPLIT = /[^\p{L}\p{N}]+/gu
 
 /** Splits a string into word tokens, ignoring separators (spaces, dashes, underscores). */
 function tokenize(text: string): string[] {
