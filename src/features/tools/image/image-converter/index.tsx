@@ -15,7 +15,7 @@ const FORMATS: { value: ConvertFormat; label: string; sub: string }[] = [
 
 export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
   const [file, setFile] = useState<File | null>(null)
-  const [format, setFormat] = useState<ConvertFormat>("jpeg")
+  const [format, setFormat] = useState<ConvertFormat>(tool.preset?.outputFormat ?? "jpeg")
   const [quality, setQuality] = useState(0.9)
   const [running, setRunning] = useState(false)
   const [output, setOutput] = useState<ImageConvertOutput | null>(null)

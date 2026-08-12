@@ -57,6 +57,19 @@ const exactToolTitles: Record<string, string> = {
   "sip-calculator": "SIP Calculator India - Mutual Fund Returns Calculator",
   "fd-calculator": "FD Calculator India - Fixed Deposit Maturity Calculator",
   "ppf-calculator": "PPF Calculator India - Maturity & Interest Calculator",
+  "compress-image-to-50kb": "Compress Image to 50KB Online Free",
+  "compress-image-to-100kb": "Compress Image to 100KB Online Free",
+  "resize-signature-140x60": "Resize Signature to 140x60 Pixels Online",
+  "resize-photo-200x230": "Resize Photo to 200x230 Pixels Online",
+  "neet-photo-size-2026": "NEET Photo Size 2026 - Resize Photo & Signature",
+  "ibps-photo-signature-resize": "IBPS Photo and Signature Resize Online",
+  "ssc-signature-resize": "SSC Signature Resize Online - 140x60 Signature",
+  "jpg-to-png": "JPG to PNG Converter Online Free",
+  "png-to-jpg": "PNG to JPG Converter Online Free",
+  "webp-to-png": "WebP to PNG Converter Online Free",
+  "jpg-to-webp": "JPG to WebP Converter Online Free",
+  "png-to-webp": "PNG to WebP Converter Online Free",
+  "webp-to-jpg": "WebP to JPG Converter Online Free",
 }
 
 const categoryTitles: Record<string, string> = {

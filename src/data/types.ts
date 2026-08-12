@@ -44,6 +44,14 @@ export interface Category {
   previewTags?: string[]
 }
 
+export interface ToolPreset {
+  targetKb?: number
+  width?: number
+  height?: number
+  presetIds?: string[]
+  outputFormat?: "jpeg" | "png" | "webp"
+}
+
 export interface ToolDefinition {
   id: string
   name: string
@@ -75,4 +83,5 @@ export interface ToolDefinition {
 
   engine: EngineFamily
   privacyNote: PrivacyNote
+  preset?: ToolPreset
 }

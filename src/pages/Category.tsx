@@ -10,6 +10,16 @@ import { getIcon } from "@/components/icons"
 import { AdSlot } from "@/components/ads/AdSlot"
 import { ShieldCheck, ChevronRight } from "lucide-react"
 import { categoryFaqs } from "@/data/category-faqs"
+import { categorySections } from "@/data/category-sections"
+
+function uniqueTools<T extends { id: string }>(items: T[]): T[] {
+  const seen = new Set<string>()
+  return items.filter((item) => {
+    if (seen.has(item.id)) return false
+    seen.add(item.id)
+    return true
+  })
+}
 
 export function CategoryPage() {
   const { categorySlug } = useParams<{ categorySlug: string }>()
@@ -21,6 +31,8 @@ export function CategoryPage() {
   const popular = getPopularTools(4)
   const breadcrumbs = categoryBreadcrumbs(category.name)
   const Icon = getIcon(category.icon)
+  const sections = categorySections[category.slug]
+  const toolsById = new Map(tools.map((tool) => [tool.id, tool]))
 
   const categoryFaqsForPage = categoryFaqs(category)
 
@@ -76,25 +88,67 @@ export function CategoryPage() {
         {/* Responsive AdSlot */}
         <AdSlot slotType="leaderboard" className="mt-6" />
 
-        {/* Tools Grid */}
+        {/* Curated Tools Sections */}
         <section className="mt-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold tracking-tight text-foreground">All {category.name} Tools</h2>
-          </div>
-
-          {tools.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {tools.map((t) => (
-                <ToolCard key={t.id} tool={t} />
-              ))}
-            </div>
-          ) : (
+          {tools.length === 0 ? (
             <div className="rounded-2xl border border-dashed bg-card p-10 text-center">
               <p className="font-medium text-foreground">Tools coming soon</p>
               <p className="mt-1 text-sm text-muted-foreground">
                 We're building {category.name} tools right now.
               </p>
             </div>
+          ) : sections?.length ? (
+            <div className="space-y-10">
+              {sections.map((section) => {
+                const sectionTools = uniqueTools(
+                  section.toolIds.map((id) => toolsById.get(id)).filter((tool): tool is (typeof tools)[number] => Boolean(tool)),
+                )
+                if (sectionTools.length === 0) return null
+
+                return (
+                  <section key={section.id} aria-labelledby={`${category.slug}-${section.id}-heading`}>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+                      <div>
+                        {section.badge && (
+                          <span className="inline-flex rounded-full border border-primary/20 bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                            {section.badge}
+                          </span>
+                        )}
+                        <h2 id={`${category.slug}-${section.id}-heading`} className="mt-2 text-xl font-bold tracking-tight text-foreground">
+                          {section.title}
+                        </h2>
+                        <p className="mt-1 max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                          {section.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={
+                        section.layout === "featured"
+                          ? "mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4"
+                          : "mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+                      }
+                    >
+                      {sectionTools.map((t) => (
+                        <ToolCard key={`${section.id}-${t.id}`} tool={t} />
+                      ))}
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
+          ) : (
+            <>
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-xl font-bold tracking-tight text-foreground">All {category.name} Tools</h2>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {tools.map((t) => (
+                  <ToolCard key={t.id} tool={t} />
+                ))}
+              </div>
+            </>
           )}
         </section>
 

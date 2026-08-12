@@ -29,13 +29,14 @@ function parseDimensions(w: string, h: string): { width?: number; height?: numbe
 
 export default function CompressImage({ tool }: { tool: ToolDefinition }) {
   const [file, setFile] = useState<File | null>(null)
+  const targetKb = tool.preset?.targetKb ?? 50
   const [form, setForm] = useState<FormState>({
     mode: "range",
     kbMin: "",
-    kbMax: "50",
+    kbMax: String(targetKb),
     exactKb: "",
-    width: "",
-    height: "",
+    width: tool.preset?.width ? String(tool.preset.width) : "",
+    height: tool.preset?.height ? String(tool.preset.height) : "",
     allowDownscale: true,
   })
   const [running, setRunning] = useState(false)
