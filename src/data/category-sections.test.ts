@@ -10,6 +10,13 @@ describe("category sections", () => {
     expect(categorySections.pdf?.some((section) => section.title.includes("Upload Limit"))).toBe(true)
   })
 
+  it("groups finance tools into curated sections", () => {
+    expect(categorySections.finance?.length).toBeGreaterThanOrEqual(4)
+    expect(categorySections.finance?.some((s) => s.title.includes("Loan EMI"))).toBe(true)
+    expect(categorySections.finance?.some((s) => s.title.includes("Tax & GST"))).toBe(true)
+    expect(categorySections.finance?.some((s) => s.title.includes("Savings"))).toBe(true)
+  })
+
   it("references only existing tool ids", () => {
     for (const sections of Object.values(categorySections)) {
       for (const section of sections) {

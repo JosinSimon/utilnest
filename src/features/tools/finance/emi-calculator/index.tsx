@@ -11,9 +11,11 @@ import { calculateEmi } from "./engine"
 const QUICK_RATES = [8.5, 9, 9.5, 10, 11]
 
 export default function EmiCalculator({ tool }: { tool: ToolDefinition }) {
-  const [principal, setPrincipal] = useState("5000000")
-  const [rate, setRate] = useState("8.5")
-  const [years, setYears] = useState("20")
+  const [principal, setPrincipal] = useState(
+    String(tool.preset?.defaultPrincipal ?? 5000000),
+  )
+  const [rate, setRate] = useState(String(tool.preset?.defaultAnnualRate ?? 8.5))
+  const [years, setYears] = useState(String(tool.preset?.defaultTenureYears ?? 20))
   const [months, setMonths] = useState("0")
 
   const result = useMemo(() => {

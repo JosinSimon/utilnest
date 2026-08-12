@@ -40,4 +40,15 @@ describe("CategoryPage", () => {
     expect(screen.getByRole("heading", { name: "Compress PDF Below 100KB" })).toBeTruthy()
     expect(screen.getByRole("heading", { name: "Convert PDFs and Images" })).toBeTruthy()
   })
+
+  it("renders curated grouped sections for finance tools", () => {
+    renderCategory("/category/finance")
+
+    expect(screen.getByRole("heading", { name: "Popular Finance Calculators" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Loan EMI Calculators" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Tax & GST Calculators" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Savings & Investment Calculators" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Home Loan EMI Calculator" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Reverse GST Calculator" })).toBeTruthy()
+  })
 })

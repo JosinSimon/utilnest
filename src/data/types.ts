@@ -52,6 +52,11 @@ export interface ToolPreset {
   outputFormat?: "jpeg" | "png" | "webp"
   compressionLevel?: "1" | "2" | "3"
   quality?: number
+  defaultPrincipal?: number
+  defaultAnnualRate?: number
+  defaultTenureYears?: number
+  gstMode?: "forward" | "reverse"
+  defaultGstRate?: number
 }
 
 export interface ToolDefinition {

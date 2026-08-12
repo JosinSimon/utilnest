@@ -147,4 +147,57 @@ export const categorySections: Partial<Record<CategorySlug, CategorySection[]>> 
       ],
     },
   ],
+  finance: [
+    {
+      id: "popular",
+      title: "Popular Finance Calculators",
+      description: "The most-used calculators for loans, taxes, GST and investments in India.",
+      layout: "featured",
+      toolIds: [
+        "emi-calculator",
+        "income-tax-calculator",
+        "gst-calculator",
+        "sip-calculator",
+      ],
+    },
+    {
+      id: "loan-emi",
+      title: "Loan EMI Calculators",
+      description: "Compute monthly EMI, total interest and schedules for home, car and personal loans.",
+      badge: "High intent",
+      layout: "compact",
+      toolIds: [
+        "home-loan-emi-calculator",
+        "car-loan-emi-calculator",
+        "personal-loan-emi-calculator",
+        "emi-calculator",
+        "interest-calculator",
+      ],
+    },
+    {
+      id: "tax-gst",
+      title: "Tax & GST Calculators",
+      description: "Estimate income tax, add or remove GST, and plan HRA and gratuity for FY 2026-27.",
+      layout: "compact",
+      toolIds: [
+        "income-tax-calculator",
+        "gst-calculator",
+        "reverse-gst-calculator",
+        "hra-calculator",
+        "gratuity-calculator",
+      ],
+    },
+    {
+      id: "savings-investment",
+      title: "Savings & Investment Calculators",
+      description: "Project maturity values and returns for SIP, FD, RD and PPF in your browser.",
+      layout: "compact",
+      toolIds: [
+        "sip-calculator",
+        "fd-calculator",
+        "rd-calculator",
+        "ppf-calculator",
+      ],
+    },
+  ],
 }

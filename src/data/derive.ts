@@ -48,12 +48,16 @@ export function categoryBreadcrumbs(categoryName: string): Breadcrumb[] {
 
 const exactToolTitles: Record<string, string> = {
   "emi-calculator": "EMI Calculator India - Home, Car & Personal Loan EMI",
+  "home-loan-emi-calculator": "Home Loan EMI Calculator India - Calculate Housing Loan EMI",
+  "car-loan-emi-calculator": "Car Loan EMI Calculator India - Calculate Monthly Car EMI",
+  "personal-loan-emi-calculator": "Personal Loan EMI Calculator India - Monthly EMI & Interest",
+  "reverse-gst-calculator": "Reverse GST Calculator India - Remove GST from Total Amount",
   "pdf-compress": "PDF Compressor Online Free - Compress PDF in Browser",
   "image-converter": "JPG PNG WebP Converter Online Free",
   "image-compressor": "Image Compressor Online - Compress to 50KB, 100KB, 200KB",
   "image-resizer": "Image Resizer Online - Resize Photos to Exact Pixels",
   "gst-calculator": "GST Calculator India - Add or Remove GST Online",
-  "income-tax-calculator": "Income Tax Calculator India FY 2026-27",
+  "income-tax-calculator": "Income Tax Calculator FY 2026-27 India - Old vs New Regime",
   "sip-calculator": "SIP Calculator India - Mutual Fund Returns Calculator",
   "fd-calculator": "FD Calculator India - Fixed Deposit Maturity Calculator",
   "ppf-calculator": "PPF Calculator India - Maturity & Interest Calculator",

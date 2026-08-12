@@ -14,8 +14,10 @@ type Split = "intra" | "inter"
 
 export default function GstCalculator({ tool }: { tool: ToolDefinition }) {
   const [amount, setAmount] = useState("10000")
-  const [rate, setRate] = useState(18)
-  const [mode, setMode] = useState<Mode>("exclusive")
+  const [rate, setRate] = useState(tool.preset?.defaultGstRate ?? 18)
+  const [mode, setMode] = useState<Mode>(
+    tool.preset?.gstMode === "reverse" ? "inclusive" : "exclusive",
+  )
   const [split, setSplit] = useState<Split>("intra")
 
   const inclusive = mode === "inclusive"

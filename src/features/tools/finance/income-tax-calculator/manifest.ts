@@ -14,15 +14,23 @@ export const definition: ToolDefinition = {
   sections: [
     {
       heading: "New vs old tax regime",
-      body: "The new tax regime (the default) offers lower rates and a ₹60,000 §87A rebate that makes income up to ₹12 lakh tax-free, but allows almost no deductions. The old regime has higher rates but lets you claim deductions for investments, insurance, HRA and home loan interest, with a ₹12,500 rebate that makes income up to ₹5 lakh tax-free. Which is cheaper depends on how many deductions you claim.",
+      body: "The new tax regime (the default) offers lower rates and a ₹60,000 §87A rebate that makes income up to ₹12 lakh tax-free, but allows almost no deductions. The old regime has higher rates but lets you claim deductions for investments, insurance, HRA and home loan interest, with a ₹12,500 rebate that makes income up to ₹5 lakh tax-free. Which is cheaper depends on how many deductions you claim. The calculator compares both side by side for the same income.",
     },
     {
       heading: "Surcharge & marginal relief",
       body: "On incomes above ₹50 lakh a surcharge applies on top of the slab tax relative to total income — 10% to ₹1 crore, 15% to ₹2 crore, 25% to ₹5 crore and up to 37% above that (capped at 25% in the new regime). Marginal relief ensures that where income only slightly crosses a threshold, the surcharge never creates a sudden jump beyond the extra income. The calculator applies and displays both.",
     },
     {
+      heading: "Standard deduction and old-regime deductions",
+      body: "The calculator applies the standard deduction automatically in both regimes — ₹75,000 in the new regime and ₹50,000 in the old. Under the old regime you can additionally enter 80C, 80D, HRA and home-loan-interest deductions, which lower your taxable income before the slabs are applied. These fields only affect the old regime, matching actual rules.",
+    },
+    {
+      heading: "Built for salaried employees",
+      body: "Enter your annual gross salary (including allowances that are fully taxable) and the calculator returns the full pipeline: taxable income, slab-by-slab tax, §87A rebate, surcharge with marginal relief, 4% health and education cess and the final tax payable — for planning purposes only, not as a substitute for professional advice or official filing guidance.",
+    },
+    {
       heading: "Why use our tax calculator?",
-      body: "It computes the full tax pipeline in one place — standard deduction, slab-by-slab tax, rebate, surcharge, marginal relief, cess and effective rate — for either regime, so you can compare both and plan your deductions before filing.",
+      body: "It computes the full tax pipeline in one place — standard deduction, slab-by-slab tax, rebate, surcharge, marginal relief, cess and effective rate — for either regime, so you can compare both and plan your deductions before filing. Everything runs in your browser; no income data leaves your device.",
     },
   ],
 
@@ -44,19 +52,28 @@ export const definition: ToolDefinition = {
     },
   ],
 
-  primaryKeyword: "income tax calculator",
+  primaryKeyword: "income tax calculator fy 2026-27",
   keywords: [
     "income tax calculator 2026",
     "income tax calculator india",
     "new tax regime calculator",
     "old tax regime calculator",
-    "tax calculator fy 2026-27",
-    "salary tax calculator",
+    "old vs new regime calculator",
+    "salary income tax calculator",
+    "income tax slabs fy 2026-27",
   ],
-  searchAliases: ["income tax", "tax calculator", "new regime", "old regime", "salary tax"],
+  searchAliases: [
+    "income tax",
+    "tax calculator",
+    "new regime",
+    "old regime",
+    "salary tax",
+    "tax slabs 2026",
+    "tax filing estimate",
+  ],
   searchWeight: 100,
 
-  relatedTools: ["hra-calculator", "gratuity-calculator"],
+  relatedTools: ["hra-calculator", "gratuity-calculator", "gst-calculator", "fd-calculator", "sip-calculator"],
   featured: true,
   trending: true,
   popular: true,
@@ -67,14 +84,19 @@ export const definition: ToolDefinition = {
   icon: "file-signature",
   faq: [
     {
-      question: "What are the income tax slabs for FY 2026-27?",
+      question: "Which financial year does this income tax calculator support?",
       answer:
-        "New regime: 0% up to ₹4L, 5% to ₹8L, 10% to ₹12L, 15% to ₹16L, 20% to ₹20L, 25% to ₹24L and 30% above ₹24L. Old regime: 0% up to ₹2.5L, 5% to ₹5L, 20% to ₹10L and 30% above ₹10L. Budget 2026 kept these unchanged.",
+        "FY 2026-27 (AY 2027-28), with the slabs announced in Budget 2025 and kept unchanged by Budget 2026. The engine is data-driven, so the financial year is explicit in every result.",
     },
     {
-      question: "Is income up to ₹12 lakh tax-free?",
+      question: "Does it compare old and new tax regimes?",
       answer:
-        "Under the new regime, yes for a salaried individual: the ₹75,000 standard deduction plus the ₹60,000 §87A rebate means gross salary up to ₹12.75 lakh can be entirely tax-free. The rebate is not available on special-rate incomes like capital gains.",
+        "Yes. Enter your income and add any old-regime deductions, then switch between the regimes to see taxable income, tax, rebate, surcharge, marginal relief, cess and total tax for both, side by side.",
+    },
+    {
+      question: "Does it include standard deduction?",
+      answer:
+        "Yes, automatically: ₹75,000 under the new regime and ₹50,000 under the old regime are deducted before slabs are applied, matching the rules for salaried taxpayers.",
     },
     {
       question: "Does the calculator include surcharge?",
@@ -82,9 +104,19 @@ export const definition: ToolDefinition = {
         "Yes. Surcharge applies from income above ₹50 lakh: 10% up to ₹1 crore, 15% up to ₹2 crore, 25% up to ₹5 crore and 37% above ₹5 crore in the old regime — capped at 25% in the new regime. Marginal relief is applied automatically so the surcharge never causes a jump larger than the extra income, and the 4% health and education cess is added on the combined tax and surcharge.",
     },
     {
-      question: "What is marginal relief on surcharge?",
+      question: "Can salaried employees use it?",
       answer:
-        "When your income is just above a surcharge threshold (₹50 lakh, ₹1 crore, ₹2 crore or ₹5 crore), marginal relief caps the income tax plus surcharge so it cannot exceed the tax at the threshold plus the amount by which your income exceeds it. This stops tax from jumping sharply for a small increase in income.",
+        "Yes. The calculator is built for salary income: it applies the standard deduction automatically, lets old-regime users add 80C, 80D, HRA and home loan deductions, and returns the full tax pipeline for FY 2026-27. Estimates are for planning — verify before filing.",
+    },
+    {
+      question: "Is my income data stored?",
+      answer:
+        "No. The calculation runs entirely in your browser and no income, deduction or regime data is uploaded or stored anywhere.",
+    },
+    {
+      question: "Is this a substitute for professional tax advice?",
+      answer:
+        "No. This is a planning and comparison aid that estimates tax from the figures you enter. Use it to compare regimes and plan deductions, but verify the final numbers with the official rules or a tax professional before filing.",
     },
   ],
   howTo: [
