@@ -6,6 +6,8 @@ describe("category sections", () => {
   it("groups image and government tools into curated sections", () => {
     expect(categorySections.image?.length).toBeGreaterThanOrEqual(3)
     expect(categorySections.government?.length).toBeGreaterThanOrEqual(2)
+    expect(categorySections.pdf?.length).toBeGreaterThanOrEqual(3)
+    expect(categorySections.pdf?.some((section) => section.title.includes("Upload Limit"))).toBe(true)
   })
 
   it("references only existing tool ids", () => {

@@ -70,6 +70,9 @@ const exactToolTitles: Record<string, string> = {
   "jpg-to-webp": "JPG to WebP Converter Online Free",
   "png-to-webp": "PNG to WebP Converter Online Free",
   "webp-to-jpg": "WebP to JPG Converter Online Free",
+  "compress-pdf-below-100kb": "Compress PDF Below 100KB Online Free",
+  "compress-pdf-below-200kb": "Compress PDF Below 200KB Online Free",
+  "compress-pdf-below-500kb": "Compress PDF Below 500KB Online Free",
 }
 
 const categoryTitles: Record<string, string> = {

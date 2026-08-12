@@ -50,6 +50,8 @@ export interface ToolPreset {
   height?: number
   presetIds?: string[]
   outputFormat?: "jpeg" | "png" | "webp"
+  compressionLevel?: "1" | "2" | "3"
+  quality?: number
 }
 
 export interface ToolDefinition {

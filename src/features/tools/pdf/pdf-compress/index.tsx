@@ -18,8 +18,8 @@ const LEVELS: { value: LevelKey; label: string; sub: string }[] = [
 
 export default function PdfCompress({ tool }: { tool: ToolDefinition }) {
   const [file, setFile] = useState<File | null>(null)
-  const [level, setLevel] = useState<LevelKey>("2")
-  const [quality, setQuality] = useState(75)
+  const [level, setLevel] = useState<LevelKey>(tool.preset?.compressionLevel ?? "2")
+  const [quality, setQuality] = useState(tool.preset?.quality ?? 75)
   const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<PdfCompressOutput>(

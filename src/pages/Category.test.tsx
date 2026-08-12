@@ -32,4 +32,12 @@ describe("CategoryPage", () => {
     expect(screen.getByRole("heading", { name: "Popular Government Form Tools" })).toBeTruthy()
     expect(screen.getByRole("heading", { name: "Exam Photo & Signature Presets" })).toBeTruthy()
   })
+
+  it("renders curated grouped sections for PDF tools", () => {
+    renderCategory("/category/pdf")
+
+    expect(screen.getByRole("heading", { name: "PDF Upload Limit Compressors" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Compress PDF Below 100KB" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Convert PDFs and Images" })).toBeTruthy()
+  })
 })

@@ -104,4 +104,47 @@ export const categorySections: Partial<Record<CategorySlug, CategorySection[]>> 
       ],
     },
   ],
+  pdf: [
+    {
+      id: "popular",
+      title: "Popular PDF Tools",
+      description: "The core PDF utilities for compressing, converting, merging and protecting files.",
+      layout: "featured",
+      toolIds: ["pdf-compress", "images-to-pdf", "pdf-to-jpg", "pdf-merge"],
+    },
+    {
+      id: "upload-limit",
+      title: "PDF Upload Limit Compressors",
+      description: "Focused PDF compression pages for common form, email and portal size limits.",
+      badge: "High intent",
+      layout: "compact",
+      toolIds: [
+        "compress-pdf-below-100kb",
+        "compress-pdf-below-200kb",
+        "compress-pdf-below-500kb",
+      ],
+    },
+    {
+      id: "convert",
+      title: "Convert PDFs and Images",
+      description: "Turn PDFs into JPG pages or combine images into a single PDF without uploading.",
+      layout: "compact",
+      toolIds: ["pdf-to-jpg", "images-to-pdf", "pdf-page-manager", "pdf-split"],
+    },
+    {
+      id: "organize-secure",
+      title: "Organize and Secure PDFs",
+      description: "Merge, split, rotate, watermark, lock and unlock PDFs in your browser.",
+      layout: "compact",
+      toolIds: [
+        "pdf-merge",
+        "pdf-split",
+        "pdf-rotate",
+        "pdf-page-manager",
+        "pdf-watermark",
+        "pdf-protect",
+        "pdf-unlock",
+      ],
+    },
+  ],
 }
