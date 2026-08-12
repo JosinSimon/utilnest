@@ -9,6 +9,7 @@ import {
   organizationJsonLd,
 } from "@/components/seo/seo-data"
 import { headHtml } from "@/components/seo/headHtml"
+import { categoryFaqs } from "@/data/category-faqs"
 
 /**
  * Returns the full <head> HTML string for a static route during pre-render.
@@ -29,7 +30,7 @@ export function headForRoute(route: StaticRoute): string {
             type: "website",
             title: site.name,
             description: site.description,
-            image: `${site.url}/og/home.png`,
+            image: site.defaultOgImage,
             url: site.url,
           },
         },
@@ -46,7 +47,7 @@ export function headForRoute(route: StaticRoute): string {
           type: "website",
           title: `Free Online Tools | ${site.name}`,
           description: "Browse every free online tool.",
-          image: `${site.url}/og/tools.png`,
+          image: site.defaultOgImage,
           url: `${site.url}/tools`,
         },
       })
@@ -61,7 +62,7 @@ export function headForRoute(route: StaticRoute): string {
           type: "website",
           title: `Search Tools | ${site.name}`,
           description: "Search every free online tool.",
-          image: `${site.url}/og/search.png`,
+          image: site.defaultOgImage,
           url: `${site.url}/search`,
         },
       })
@@ -69,7 +70,7 @@ export function headForRoute(route: StaticRoute): string {
     case "category": {
       const category = route.categorySlug ? categoryBySlug(route.categorySlug) : undefined
       if (!category) return headJsonLdOnly(route)
-      const data = categorySeoData(category)
+      const data = categorySeoData(category, categoryFaqs(category))
       return headHtml(data)
     }
 
@@ -102,7 +103,7 @@ function headForLegal(path: string): string {
       type: "website",
       title: item.title,
       description: item.desc,
-      image: `${site.url}/og/about.png`,
+      image: site.defaultOgImage,
       url: `${site.url}${path}`,
     },
   })
@@ -118,7 +119,7 @@ function headJsonOnly(route: StaticRoute): string {
       type: "website",
       title: site.name,
       description: site.description,
-      image: `${site.url}/og/about.png`,
+      image: site.defaultOgImage,
       url: `${site.url}${route.path}`,
     },
   })

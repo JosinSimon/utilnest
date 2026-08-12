@@ -18,7 +18,7 @@ export function NotFoundPage() {
             type: "website",
             title: "Page not found",
             description: "The page you're looking for doesn't exist.",
-            image: `${site.url}/og/404.png`,
+            image: site.defaultOgImage,
             url: `${site.url}/404`,
           },
         }}

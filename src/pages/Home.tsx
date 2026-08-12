@@ -43,7 +43,7 @@ export function HomePage() {
             type: "website",
             title: site.name,
             description: site.description,
-            image: `${site.url}/og/home.png`,
+            image: site.defaultOgImage,
             url: site.url,
           },
           jsonLd: [websiteJsonLd(), organizationJsonLd()].filter(

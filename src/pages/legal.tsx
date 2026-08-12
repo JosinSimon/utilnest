@@ -28,7 +28,7 @@ function Page({
             type: "website",
             title: seoTitle,
             description,
-            image: `${site.url}/og/about.png`,
+            image: site.defaultOgImage,
             url: `${site.url}/${routePath(title)}`,
           },
         }}

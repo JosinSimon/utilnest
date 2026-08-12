@@ -1,0 +1,24 @@
+# UtilNest
+
+UtilNest is a free online tools website for India-focused calculators, PDF tools, image tools, government document tools, text tools, business tools, and utilities.
+
+Website: https://utilnest.in
+Sitemap: https://utilnest.in/sitemap.xml
+
+Important sections:
+- Finance tools: https://utilnest.in/category/finance
+- PDF tools: https://utilnest.in/category/pdf
+- Image tools: https://utilnest.in/category/image
+- Government document tools: https://utilnest.in/category/government
+- Business tools: https://utilnest.in/category/business
+- Text tools: https://utilnest.in/category/text
+- Utility tools: https://utilnest.in/category/utilities
+
+Key pages:
+- EMI Calculator: https://utilnest.in/category/finance/emi-calculator
+- PDF Compressor: https://utilnest.in/category/pdf/pdf-compress
+- Image Converter: https://utilnest.in/category/image/image-converter
+- Image Compressor: https://utilnest.in/category/image/image-compressor
+- Government Exam Photo Resizer: https://utilnest.in/category/government/government-exam-photo
+
+All tools are free to use and designed to run privately in the browser where possible.

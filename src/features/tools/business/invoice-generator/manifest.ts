@@ -6,7 +6,7 @@ export const definition: ToolDefinition = {
   slug: "invoice-generator",
   category: "business",
   path: "business/invoice-generator",
-  shortDescription: "Generate professional GST-compliant invoices.",
+  shortDescription: "Generate professional GST-compliant invoices for Indian businesses, freelancers and sellers in your browser.",
   longDescription: "Create, download, and print professional tax invoices for your business. Supports CGST, SGST, IGST, discounts, and logo uploads. 100% free and runs in your browser.",
   sections: [
     { heading: "About", body: "Generate customized GST-compliant tax invoices instantly." }

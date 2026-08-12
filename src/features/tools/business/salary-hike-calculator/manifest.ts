@@ -6,7 +6,7 @@ export const definition: ToolDefinition = {
   slug: "salary-hike-calculator",
   category: "business",
   path: "business/salary-hike-calculator",
-  shortDescription: "Calculate new salary based on hike percentage.",
+  shortDescription: "Calculate your new monthly salary, annual CTC and total increment from any hike percentage.",
   longDescription: "Calculate your new monthly salary and annual CTC after an increment. Instantly see your monthly and annual increase.",
   sections: [
     {

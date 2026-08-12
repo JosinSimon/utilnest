@@ -16,16 +16,25 @@ async function main() {
   try {
     const { sitemapRoutes } = await server.ssrLoadModule("/src/app/static-routes.ts")
     const { site } = await server.ssrLoadModule("/src/data/site.ts")
+    const { getToolBySlug } = await server.ssrLoadModule("/src/data/registry.ts")
 
     const todayIso = new Date().toISOString().split("T")[0]
+
+    const lastmodForRoute = (r: { kind: string; toolSlug?: string }) => {
+      if (r.kind === "tool" && r.toolSlug) {
+        const tool = getToolBySlug(r.toolSlug)
+        return tool?.lastUpdated ?? todayIso
+      }
+      return todayIso
+    }
 
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${sitemapRoutes
   .map(
-    (r) => `  <url>
+    (r: { path: string; kind: string; toolSlug?: string }) => `  <url>
     <loc>${site.url}${r.path === "/" ? "" : r.path}</loc>
-    <lastmod>${todayIso}</lastmod>
+    <lastmod>${lastmodForRoute(r)}</lastmod>
   </url>`,
   )
   .join("\n")}

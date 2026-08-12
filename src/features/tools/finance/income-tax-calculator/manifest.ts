@@ -8,7 +8,7 @@ export const definition: ToolDefinition = {
   path: "finance/income-tax-calculator",
 
   shortDescription:
-    "Estimate your FY 2026-27 income tax under both the new & old regimes — slabs, standard deduction, §87A rebate, surcharge, marginal relief and 4% cess. Free and 100% private.",
+    "Estimate FY 2026-27 income tax under new and old regimes — slabs, rebate, surcharge, marginal relief and cess. Free and private.",
   longDescription:
     "Our free income tax calculator estimates your tax liability for FY 2026-27 (AY 2027-28). Enter your annual gross income, choose between the new and old tax regimes, and optionally add your old-regime deductions (80C, 80D, HRA, home loan interest) to instantly see your taxable income, income tax, §87A rebate, surcharge (from ₹50 lakh), marginal relief, 4% cess and the final tax payable. The calculator uses the slabs announced in Budget 2025 and unchanged by Budget 2026, with surcharge capped at 25% under the new regime. No sign-up, no uploads — everything runs on your device.",
   sections: [

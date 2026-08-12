@@ -16,6 +16,7 @@ export const site = {
   gaId: "",
   clarityId: "",
   legalEmail: "support@utilnest.in",
+  defaultOgImage: `${SITE_URL}/og/default.svg`,
 } as const
 
 export const toolPrefix = "Free Online" as const

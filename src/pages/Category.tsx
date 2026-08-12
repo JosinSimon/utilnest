@@ -9,6 +9,7 @@ import { categoryBreadcrumbs } from "@/data/derive"
 import { getIcon } from "@/components/icons"
 import { AdSlot } from "@/components/ads/AdSlot"
 import { ShieldCheck, ChevronRight } from "lucide-react"
+import { categoryFaqs } from "@/data/category-faqs"
 
 export function CategoryPage() {
   const { categorySlug } = useParams<{ categorySlug: string }>()
@@ -21,26 +22,13 @@ export function CategoryPage() {
   const breadcrumbs = categoryBreadcrumbs(category.name)
   const Icon = getIcon(category.icon)
 
-  const categoryFaqs = [
-    {
-      question: `Are all ${category.name} tools on UtilNest 100% free?`,
-      answer: `Yes, every ${category.name.toLowerCase()} tool on UtilNest is completely free to use with zero registration, subscription fees, or hidden limits.`,
-    },
-    {
-      question: `Does UtilNest store my data when using ${category.name} tools?`,
-      answer: `No. All ${category.name.toLowerCase()} processing happens locally inside your web browser. Your inputs and files never leave your device.`,
-    },
-    {
-      question: `Can I use ${category.name} tools on mobile phones?`,
-      answer: `Yes! All ${category.name.toLowerCase()} tools are touch-optimized and fully responsive across smartphones, tablets, and desktop computers.`,
-    },
-  ]
+  const categoryFaqsForPage = categoryFaqs(category)
 
   const colorClass = category.color || "from-primary/10 to-primary/5 text-primary border-border"
 
   return (
     <>
-      <Seo data={categorySeoData(category, categoryFaqs)} />
+      <Seo data={categorySeoData(category, categoryFaqsForPage)} />
 
       <div className="mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8">
         <div className="py-6">
@@ -135,7 +123,7 @@ export function CategoryPage() {
           </div>
 
           <div className="mt-6 space-y-3">
-            {categoryFaqs.map((f) => (
+            {categoryFaqsForPage.map((f) => (
               <details key={f.question} className="group rounded-xl border border-border/70 bg-card p-4 transition-all">
                 <summary className="cursor-pointer font-semibold text-foreground flex items-center justify-between text-sm sm:text-base list-none">
                   <span>{f.question}</span>

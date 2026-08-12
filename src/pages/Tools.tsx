@@ -21,7 +21,7 @@ export function ToolsPage() {
             type: "website",
             title: `All Tools | ${site.name}`,
             description: "Browse every free online tool.",
-            image: `${site.url}/og/tools.png`,
+            image: site.defaultOgImage,
             url: `${site.url}/tools`,
           },
         }}

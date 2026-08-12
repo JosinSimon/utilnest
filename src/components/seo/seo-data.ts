@@ -7,6 +7,7 @@ import {
   toISODate,
   categoryCanonicalUrl,
   seoTitleForCategory,
+  categoryOgImage,
 } from "@/data/derive"
 import { site } from "@/data/site"
 
@@ -74,16 +75,16 @@ export function categorySeoData(category: Category, categoryFaqs?: FaqItem[]): S
   }
 
   return {
-    title: seoTitleForCategory(category.name),
+    title: seoTitleForCategory(category),
     description: category.description,
     canonical: categoryCanonicalUrl(category.slug),
     keywords: category.keywords,
     robots: site.noIndex ? "noindex, nofollow" : "index, follow",
     og: {
       type: "website",
-      title: seoTitleForCategory(category.name),
+      title: seoTitleForCategory(category),
       description: category.description,
-      image: `${site.url}/og/category-${category.slug}.png`,
+      image: categoryOgImage(category.slug),
       url: categoryCanonicalUrl(category.slug),
     },
     jsonLd: jsonLdList,
@@ -113,7 +114,7 @@ export function organizationJsonLd(): JsonLd {
     "@type": "Organization",
     name: site.name,
     url: site.url,
-    logo: `${site.url}/og/logo.png`,
+    logo: site.defaultOgImage,
   }
 }
 

@@ -30,12 +30,12 @@ export function SearchPage() {
       <Seo
         data={{
           ...seoData,
-          robots: "index, follow",
+          robots: "noindex, follow",
           og: {
             type: "website",
             title: seoData.title,
             description: seoData.description,
-            image: `${site.url}/og/search.png`,
+            image: site.defaultOgImage,
             url: seoData.canonical,
           },
         }}

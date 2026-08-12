@@ -6,7 +6,7 @@ export const definition: ToolDefinition = {
   slug: "receipt-generator",
   category: "business",
   path: "business/receipt-generator",
-  shortDescription: "Generate professional payment receipts instantly.",
+  shortDescription: "Generate professional payment receipts instantly for cash, UPI, bank transfer and business payments.",
   longDescription: "Create, download, and print professional payment receipts. Simple and easy-to-use receipt maker for your business.",
   sections: [
     { heading: "About", body: "Generate customized payment receipts easily. Add your business details, customer information, and payment breakdown to create a professional receipt." }
