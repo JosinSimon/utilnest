@@ -13,8 +13,9 @@ import type { CategorySlug } from "@/data/types"
 import { ToolCard } from "@/components/ToolCard"
 import { getIcon } from "@/components/icons"
 import { Seo } from "@/components/seo/Seo"
-import { websiteJsonLd, organizationJsonLd } from "@/components/seo/seo-data"
+import { websiteJsonLd, organizationJsonLd, faqJsonLd } from "@/components/seo/seo-data"
 import { CommandPalette } from "@/features/search/CommandPalette"
+import { HOME_FAQS, HOME_FAQ_SCHEMA } from "@/data/home-faqs"
 
 export function HomePage() {
   const popular = getPopularTools(8)
@@ -35,7 +36,7 @@ export function HomePage() {
     <>
       <Seo
         data={{
-          title: `${site.name} - ${site.tagline} | ${categories.length} Utility Categories`,
+          title: `${site.name} - Free Online Tools India | PDF, Image, EMI Calculator & More`,
           description: site.description,
           canonical: site.url,
           robots: "index, follow",
@@ -46,7 +47,7 @@ export function HomePage() {
             image: site.defaultOgImage,
             url: site.url,
           },
-          jsonLd: [websiteJsonLd(), organizationJsonLd()].filter(
+          jsonLd: [websiteJsonLd(), organizationJsonLd(), faqJsonLd(HOME_FAQ_SCHEMA)].filter(
             (x): x is Record<string, unknown> => Boolean(x),
           ),
         }}
@@ -314,18 +315,3 @@ function FacetedSection({
     </section>
   )
 }
-
-const HOME_FAQS = [
-  {
-    q: "Are all tools on UtilNest really 100% free?",
-    a: "Yes! Every single tool on UtilNest is completely free with no registration, no subscription, and no hidden usage limits.",
-  },
-  {
-    q: "Do you store my uploaded images, PDFs, or financial data?",
-    a: "Never. All calculations, PDF conversions, image compression, and QR code generations happen locally inside your browser memory using client-side JavaScript. Your data never touches any server.",
-  },
-  {
-    q: "Can I use UtilNest tools offline or on mobile?",
-    a: "Yes! UtilNest is fully mobile-responsive and works smoothly on smartphones, tablets, and desktops. Once loaded, tools work offline as well.",
-  },
-]

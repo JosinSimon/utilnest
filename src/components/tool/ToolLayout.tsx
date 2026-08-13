@@ -26,7 +26,7 @@ export function ToolLayout({ tool }: ToolLayoutProps) {
     .slice(0, 6)
 
   const seoData = toolSeoData(tool)
-  const breadcrumbs = toolBreadcrumbs(tool)
+  const breadcrumbs = toolBreadcrumbs(tool, category?.name)
 
   return (
     <>

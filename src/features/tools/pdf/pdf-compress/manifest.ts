@@ -47,7 +47,7 @@ export const definition: ToolDefinition = {
   addedAt: "2026-08-08",
   lastUpdated: "2026-08-08",
 
-  schemaType: "Generator",
+  schemaType: "Utility",
   icon: "gauge",
   faq: [
     {

@@ -28,14 +28,30 @@ async function main() {
       return todayIso
     }
 
+    const metaForRoute = (kind: string): { changefreq: string; priority: string } => {
+      switch (kind) {
+        case "home": return { changefreq: "daily", priority: "1.0" }
+        case "tools": return { changefreq: "weekly", priority: "0.9" }
+        case "category": return { changefreq: "weekly", priority: "0.8" }
+        case "tool": return { changefreq: "monthly", priority: "0.7" }
+        case "legal": return { changefreq: "yearly", priority: "0.3" }
+        default: return { changefreq: "monthly", priority: "0.5" }
+      }
+    }
+
     const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${sitemapRoutes
   .map(
-    (r: { path: string; kind: string; toolSlug?: string }) => `  <url>
+    (r: { path: string; kind: string; toolSlug?: string }) => {
+      const meta = metaForRoute(r.kind)
+      return `  <url>
     <loc>${site.url}${r.path === "/" ? "" : r.path}</loc>
     <lastmod>${lastmodForRoute(r)}</lastmod>
-  </url>`,
+    <changefreq>${meta.changefreq}</changefreq>
+    <priority>${meta.priority}</priority>
+  </url>`
+    },
   )
   .join("\n")}
 </urlset>`
@@ -43,6 +59,21 @@ ${sitemapRoutes
     const robots = `User-agent: *
 Allow: /
 Disallow: /search
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: CCBot
+Disallow: /
 
 Sitemap: ${site.url}/sitemap.xml
 `

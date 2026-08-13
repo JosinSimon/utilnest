@@ -1,5 +1,5 @@
 import { site } from "@/data/site"
-import { categories, categoryBySlug } from "@/data/categories"
+import { categoryBySlug } from "@/data/categories"
 import { getToolBySlug } from "@/data/registry"
 import type { StaticRoute } from "./static-routes"
 import {
@@ -7,9 +7,11 @@ import {
   categorySeoData,
   websiteJsonLd,
   organizationJsonLd,
+  faqJsonLd,
 } from "@/components/seo/seo-data"
 import { headHtml } from "@/components/seo/headHtml"
 import { categoryFaqs } from "@/data/category-faqs"
+import { HOME_FAQ_SCHEMA } from "@/data/home-faqs"
 
 /**
  * Returns the full <head> HTML string for a static route during pre-render.
@@ -21,7 +23,7 @@ export function headForRoute(route: StaticRoute): string {
     case "home":
       return headHtml(
         {
-          title: `${site.name} - ${site.tagline} | ${categories.length} Tool Categories`,
+          title: `${site.name} - Free Online Tools India | PDF, Image, EMI Calculator & More`,
           description: site.description,
           canonical: site.url,
           robots: "index, follow",
@@ -34,7 +36,9 @@ export function headForRoute(route: StaticRoute): string {
             url: site.url,
           },
         },
-        [websiteJsonLd(), organizationJsonLd()],
+        [websiteJsonLd(), organizationJsonLd(), faqJsonLd(HOME_FAQ_SCHEMA)].filter(
+          (x): x is Record<string, unknown> => Boolean(x),
+        ),
       )
 
     case "tools":

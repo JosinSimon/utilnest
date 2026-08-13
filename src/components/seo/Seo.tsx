@@ -19,6 +19,17 @@ function upsertLink(rel: string, href: string) {
     el.setAttribute("rel", rel)
     document.head.appendChild(el)
   }
+    el.setAttribute("href", href)
+}
+
+function upsertHreflang(lang: string, href: string) {
+  let el = document.head.querySelector<HTMLLinkElement>(`link[rel="alternate"][hreflang="${lang}"]`)
+  if (!el) {
+    el = document.createElement("link")
+    el.setAttribute("rel", "alternate")
+    el.setAttribute("hreflang", lang)
+    document.head.appendChild(el)
+  }
   el.setAttribute("href", href)
 }
 
@@ -48,10 +59,14 @@ export function Seo({ data }: { data: SeoData }) {
     document.title = data.title
     upsertMeta("name", "description", data.description)
     upsertMeta("name", "robots", data.robots ?? "index, follow")
+    upsertMeta("name", "author", site.name)
+    upsertMeta("property", "og:locale", "en_IN")
     if (data.keywords?.length) {
       upsertMeta("name", "keywords", data.keywords.join(", "))
     }
     upsertLink("canonical", data.canonical)
+    upsertHreflang("en-IN", data.canonical)
+    upsertHreflang("x-default", data.canonical)
     upsertMeta("property", "og:title", data.og.title)
     upsertMeta("property", "og:description", data.og.description)
     upsertMeta("property", "og:type", data.og.type)

@@ -39,8 +39,8 @@ describe("SEO data", () => {
     const emi = getToolBySlug("emi-calculator")!
     const image = categoryBySlug("image")!
 
-    expect(toolSeoData(emi).og.image).toBe("https://utilnest.in/og/default.svg")
-    expect(categorySeoData(image).og.image).toBe("https://utilnest.in/og/default.svg")
+    expect(toolSeoData(emi).og.image).toBe("https://utilnest.in/og/default.png")
+    expect(categorySeoData(image).og.image).toBe("https://utilnest.in/og/default.png")
   })
 
   it("keeps every tool title and description clean for search snippets", () => {

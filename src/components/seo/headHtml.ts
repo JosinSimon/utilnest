@@ -38,8 +38,12 @@ export function headHtml(data: SeoData, extraJsonLd: unknown[] = []): string {
     <title>${escapeHtml(data.title)}</title>
     <meta name="description" content="${escapeHtml(data.description)}" />
     <meta name="robots" content="${escapeHtml(data.robots ?? "index, follow")}" />
+    <meta name="author" content="${escapeHtml(site.name)}" />
     ${data.keywords?.length ? `<meta name="keywords" content="${escapeHtml(data.keywords.join(", "))}" />` : ""}
     <link rel="canonical" href="${escapeHtml(data.canonical)}" />
+    <link rel="alternate" hreflang="en-IN" href="${escapeHtml(data.canonical)}" />
+    <link rel="alternate" hreflang="x-default" href="${escapeHtml(data.canonical)}" />
+    <meta property="og:locale" content="en_IN" />
     <meta property="og:site_name" content="${escapeHtml(site.name)}" />
     <meta property="og:type" content="${escapeHtml(data.og.type)}" />
     <meta property="og:title" content="${escapeHtml(data.og.title)}" />
@@ -50,7 +54,8 @@ export function headHtml(data: SeoData, extraJsonLd: unknown[] = []): string {
     <meta name="twitter:title" content="${escapeHtml(data.og.title)}" />
     <meta name="twitter:description" content="${escapeHtml(data.og.description)}" />
     <meta name="twitter:image" content="${escapeHtml(data.og.image)}" />
-    <meta name="theme-color" content="#fafafa" />
+    <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     ${jsonLdScripts}
   `
 }

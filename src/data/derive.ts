@@ -30,10 +30,10 @@ export function categoryOgImage(_category: string): string {
   return site.defaultOgImage
 }
 
-export function toolBreadcrumbs(tool: ToolDefinition): Breadcrumb[] {
+export function toolBreadcrumbs(tool: ToolDefinition, categoryName?: string): Breadcrumb[] {
   return [
     { label: "Home", href: "/" },
-    { label: "Tools", href: "/tools" },
+    { label: categoryName ?? tool.category, href: categoryPath(tool.category) },
     { label: tool.name, href: toolPath(tool.category, tool.slug) },
   ]
 }

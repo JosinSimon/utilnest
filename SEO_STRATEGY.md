@@ -60,7 +60,7 @@ Prioritize pages by ranking difficulty:
 
 - Current systemic SEO guard lives in `src/components/seo/seo-data.test.ts`.
 - Shared category FAQ copy lives in `src/data/category-faqs.ts` so visual FAQs and prerendered schema stay in sync.
-- Shared OG fallback is `public/og/default.svg` and `site.defaultOgImage`.
+- Shared OG fallback is `public/og/default.png` and `site.defaultOgImage`.
 - `public/llms.txt` exists for AI crawler discovery.
 - `public/ads.txt` is intentionally placeholder-only until the real AdSense publisher ID is known.
 

@@ -145,6 +145,7 @@ export function softwareJsonLd(tool: ToolDefinition): JsonLd {
     browserRequirements: "Requires JavaScript",
     inLanguage: "en-IN",
     offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+    datePublished: toISODate(tool.addedAt),
     dateModified: toISODate(tool.lastUpdated),
   }
 }
