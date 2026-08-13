@@ -1,6 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
-  <rect width="32" height="32" rx="8" fill="#18181b" />
-  <path d="M7 10.5h10.5a4.75 4.75 0 0 1 0 9.5H7" stroke="#fafafa" stroke-width="2" stroke-linecap="round" />
-  <path d="M7 15h11" stroke="#fafafa" stroke-width="2" stroke-linecap="round" />
-  <circle cx="23.5" cy="21.5" r="2" fill="#a1a1aa" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">UtilNest</title>
+  <desc id="desc">UtilNest dark rounded-square wind logo.</desc>
+  <defs>
+    <linearGradient id="bg" x1="96" y1="64" x2="416" y2="448" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#27272a"/>
+      <stop offset="0.58" stop-color="#18181b"/>
+      <stop offset="1" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="112" y1="72" x2="384" y2="420" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.16"/>
+      <stop offset="0.44" stop-color="#ffffff" stop-opacity="0.04"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect x="56" y="56" width="400" height="400" rx="108" fill="url(#bg)"/>
+  <rect x="72" y="72" width="368" height="368" rx="94" fill="url(#shine)"/>
+  <path d="M249.6 353.8A42.7 42.7 0 1 0 275.2 277.0H106.7" fill="none" stroke="#fafafa" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M350.0 106.7A53.3 53.3 0 1 1 392.7 192.0H106.7" fill="none" stroke="#fafafa" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M185.6 85.3A42.7 42.7 0 1 1 211.2 162.1H106.7" fill="none" stroke="#fafafa" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
