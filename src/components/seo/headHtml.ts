@@ -56,6 +56,10 @@ export function headHtml(data: SeoData, extraJsonLd: unknown[] = []): string {
     <meta name="twitter:image" content="${escapeHtml(data.og.image)}" />
     <meta name="theme-color" content="#fafafa" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="${escapeHtml(site.name)}" />
+    <meta name="mobile-web-app-capable" content="yes" />
     ${jsonLdScripts}
   `
 }

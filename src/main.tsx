@@ -4,6 +4,14 @@ import { BrowserRouter } from "react-router-dom"
 import { AppRoutes } from "./app/AppRoutes"
 import "./index.css"
 
+if ("serviceWorker" in navigator && import.meta.env.PROD) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/sw.js").catch(() => {
+      // Handled gracefully without blocking app boot
+    })
+  })
+}
+
 const root = document.getElementById("root")
 
 if (root) {
