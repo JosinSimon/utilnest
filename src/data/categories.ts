@@ -85,6 +85,18 @@ export const categories: Category[] = [
     previewTags: ["QR Generator", "Password", "Age Calc", "Timer"],
     keywords: ["qr code generator", "password generator", "age calculator", "random number generator"],
   },
+  {
+    slug: "audio",
+    name: "Audio",
+    tagline: "Convert, trim & compress audio files",
+    description:
+      "Free online audio converters for AMR, M4A, MP3, and WAV files. Convert call recordings and voice notes privately in your browser without file uploads.",
+    icon: "music",
+    order: 8,
+    color: "from-amber-500/10 to-rose-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20",
+    previewTags: ["AMR to MP3", "M4A to MP3", "AMR to WAV", "MP3 to WAV"],
+    keywords: ["amr to mp3", "audio converter", "m4a to mp3", "call recording converter", "amr to wav"],
+  },
 ]
 
 export function getCategory(slug: CategorySlug): Category | undefined {

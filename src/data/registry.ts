@@ -62,18 +62,21 @@ export function getRelatedTools(tool: ToolDefinition): ToolDefinition[] {
 export function getPopularTools(limit = 8): ToolDefinition[] {
   return allTools
     .filter((t) => t.popular)
+    .sort((a, b) => b.searchWeight - a.searchWeight)
     .slice(0, limit)
 }
 
 export function getTrendingTools(limit = 8): ToolDefinition[] {
   return allTools
     .filter((t) => t.trending)
+    .sort((a, b) => b.searchWeight - a.searchWeight)
     .slice(0, limit)
 }
 
 export function getFeaturedTools(limit = 6): ToolDefinition[] {
   return allTools
     .filter((t) => t.featured)
+    .sort((a, b) => b.searchWeight - a.searchWeight)
     .slice(0, limit)
 }
 

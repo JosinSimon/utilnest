@@ -200,4 +200,29 @@ export const categorySections: Partial<Record<CategorySlug, CategorySection[]>> 
       ],
     },
   ],
+  audio: [
+    {
+      id: "popular",
+      title: "Popular Audio Converters",
+      description: "Convert phone call recordings, voice notes and audio files directly in your browser.",
+      badge: "Popular in India",
+      layout: "featured",
+      toolIds: ["amr-to-mp3", "m4a-to-mp3", "amr-to-wav"],
+    },
+    {
+      id: "call-voice-notes",
+      title: "Call Recordings & Voice Notes",
+      description: "Convert AMR and M4A audio files from Android phones, iPhones, and voice recorders.",
+      badge: "High intent",
+      layout: "compact",
+      toolIds: ["amr-to-mp3", "amr-to-wav", "m4a-to-mp3"],
+    },
+    {
+      id: "format-converters",
+      title: "Audio Format Converters",
+      description: "Convert between MP3 and uncompressed WAV formats instantly without quality loss.",
+      layout: "compact",
+      toolIds: ["mp3-to-wav", "wav-to-mp3"],
+    },
+  ],
 }

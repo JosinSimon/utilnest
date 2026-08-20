@@ -77,6 +77,11 @@ const exactToolTitles: Record<string, string> = {
   "compress-pdf-below-100kb": "Compress PDF Below 100KB Online Free",
   "compress-pdf-below-200kb": "Compress PDF Below 200KB Online Free",
   "compress-pdf-below-500kb": "Compress PDF Below 500KB Online Free",
+  "amr-to-mp3": "AMR to MP3 Converter Online Free - Call Recording to MP3",
+  "amr-to-wav": "AMR to WAV Converter Online Free - Lossless Audio",
+  "m4a-to-mp3": "M4A to MP3 Converter Online Free - Voice Memo to MP3",
+  "mp3-to-wav": "MP3 to WAV Converter Online Free - Convert MP3 to WAV",
+  "wav-to-mp3": "WAV to MP3 Converter Online Free - Convert WAV to MP3",
 }
 
 const categoryTitles: Record<string, string> = {
@@ -87,6 +92,7 @@ const categoryTitles: Record<string, string> = {
   text: "Free Text Tools Online - Word Counter, Case Converter & More",
   business: "Free Business Tools India - Invoices, Quotes & Calculators",
   utilities: "Free Utility Tools Online - QR, Password, Timer & More",
+  audio: "Free Audio Tools Online - AMR to MP3, M4A & WAV Converter",
 }
 
 function titleCase(value: string): string {
@@ -94,7 +100,7 @@ function titleCase(value: string): string {
     .split(/\s+/)
     .map((word) => {
       const upper = word.toUpperCase()
-      if (["PDF", "JPG", "PNG", "WEBP", "GST", "EMI", "SIP", "FD", "RD", "PPF", "HRA", "QR", "UUID", "UPI"].includes(upper)) return upper
+      if (["PDF", "JPG", "PNG", "WEBP", "GST", "EMI", "SIP", "FD", "RD", "PPF", "HRA", "QR", "UUID", "UPI", "AMR", "MP3", "WAV", "M4A", "AAC", "OGG"].includes(upper)) return upper
       return word.charAt(0).toUpperCase() + word.slice(1)
     })
     .join(" ")

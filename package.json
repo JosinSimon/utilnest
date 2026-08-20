@@ -16,6 +16,8 @@
     "test:e2e": "playwright test"
   },
   "dependencies": {
+    "@audio/decode-amr": "^1.3.0",
+    "@breezystack/lamejs": "^1.2.7",
     "@pdfsmaller/pdf-decrypt": "^1.0.1",
     "@pdfsmaller/pdf-encrypt": "^1.2.0",
     "@radix-ui/react-dialog": "^1.1.23",

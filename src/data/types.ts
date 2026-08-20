@@ -6,6 +6,7 @@ export type CategorySlug =
   | "text"
   | "business"
   | "utilities"
+  | "audio"
 
 export type SchemaType = "Calculator" | "Converter" | "Generator" | "Utility"
 export type EngineFamily = "calculator" | "text" | "file"

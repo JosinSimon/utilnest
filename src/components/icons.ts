@@ -73,6 +73,12 @@ import {
   FileDown,
   FileImage,
   Stamp,
+  Music,
+  Volume2,
+  Mic,
+  Headphones,
+  AudioLines,
+  FileAudio,
   type LucideIcon,
 } from "lucide-react"
 
@@ -151,6 +157,12 @@ const iconMap: Record<string, LucideIcon> = {
   "file-down": FileDown,
   "file-image": FileImage,
   "file-watermark": Stamp,
+  music: Music,
+  "volume-2": Volume2,
+  mic: Mic,
+  headphones: Headphones,
+  "audio-lines": AudioLines,
+  "file-audio": FileAudio,
 }
 
 export function getIcon(name: string): LucideIcon {

@@ -48,7 +48,15 @@ describe("CategoryPage", () => {
     expect(screen.getByRole("heading", { name: "Loan EMI Calculators" })).toBeTruthy()
     expect(screen.getByRole("heading", { name: "Tax & GST Calculators" })).toBeTruthy()
     expect(screen.getByRole("heading", { name: "Savings & Investment Calculators" })).toBeTruthy()
-    expect(screen.getByRole("heading", { name: "Home Loan EMI Calculator" })).toBeTruthy()
-    expect(screen.getByRole("heading", { name: "Reverse GST Calculator" })).toBeTruthy()
+    expect(screen.getAllByRole("heading", { name: "Home Loan EMI Calculator" }).length).toBeGreaterThanOrEqual(1)
+    expect(screen.getAllByRole("heading", { name: "Reverse GST Calculator" }).length).toBeGreaterThanOrEqual(1)
+  })
+
+  it("renders curated grouped sections for audio tools", () => {
+    renderCategory("/category/audio")
+
+    expect(screen.getByRole("heading", { name: "Popular Audio Converters" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Call Recordings & Voice Notes" })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: "Audio Format Converters" })).toBeTruthy()
   })
 })

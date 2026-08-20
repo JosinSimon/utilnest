@@ -8,6 +8,8 @@ describe("category sections", () => {
     expect(categorySections.government?.length).toBeGreaterThanOrEqual(2)
     expect(categorySections.pdf?.length).toBeGreaterThanOrEqual(3)
     expect(categorySections.pdf?.some((section) => section.title.includes("Upload Limit"))).toBe(true)
+    expect(categorySections.audio?.length).toBeGreaterThanOrEqual(2)
+    expect(categorySections.audio?.some((s) => s.title.includes("Popular Audio"))).toBe(true)
   })
 
   it("groups finance tools into curated sections", () => {
