@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import {
@@ -52,7 +53,6 @@ export default function BackgroundRemover({ tool }: { tool: ToolDefinition }) {
   const [feather, setFeather] = useState(1)
   const [preview, setPreview] = useState<string | null>(null)
   const [recommendState, setRecommendState] = useState<RecommendState | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<unknown>("file", tool.id)
 
@@ -137,21 +137,20 @@ export default function BackgroundRemover({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="image/jpeg,image/png,image/webp"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              enablePaste
+              title="Drag & drop your image here, or browse"
+              description="Supports JPG, PNG, WebP · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFile(null)
+                setPreview(null)
+                setRecommendState(null)
+                reset()
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another image" : "Choose an image"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
           </div>
 
           {preview && (

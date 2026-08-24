@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runImageCrop, type CropRect, type CropFormat } from "./engine"
 
@@ -169,21 +170,20 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="image/*"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
-              id="crop-file"
+              enablePaste
+              title="Drag & drop your image here, or browse"
+              description="Supports JPG, PNG, WebP, AVIF · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFile(null)
+                setImgUrl(null)
+                setBox(null)
+                setOutput(null)
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => document.getElementById("crop-file")?.click()}>
-              {file ? "Choose another image" : "Choose an image"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
           </div>
 
           <div className="flex flex-wrap gap-2">

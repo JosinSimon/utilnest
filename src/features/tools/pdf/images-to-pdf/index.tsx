@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import { runImagesToPdf, type ImagesToPdfOutput } from "./engine"
@@ -30,7 +31,6 @@ export default function ImagesToPdf({ tool }: { tool: ToolDefinition }) {
   const [pageSize, setPageSize] = useState<PdfTargetSize>("match")
   const [rotation, setRotation] = useState<RotationKey>("0")
   const [margin, setMargin] = useState(8)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<ImagesToPdfOutput>(
     "file",
@@ -38,9 +38,11 @@ export default function ImagesToPdf({ tool }: { tool: ToolDefinition }) {
   )
 
   const onFiles = useCallback(
-    (list: FileList | null) => {
-      if (!list?.length) return
-      const accepted = Array.from(list).filter((f) =>
+    (list: FileList | File[] | null) => {
+      if (!list) return
+      const incoming = Array.isArray(list) ? list : Array.from(list)
+      if (!incoming.length) return
+      const accepted = incoming.filter((f) =>
         /image\/(jpeg|png)|\.webp$/i.test(f.type + f.name),
       )
       if (accepted.length > 0) {
@@ -92,21 +94,19 @@ export default function ImagesToPdf({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              files={files}
               multiple
+              onFiles={onFiles}
               accept="image/jpeg,image/png,image/webp"
-              aria-label="Choose images"
-              className="hidden"
-              onChange={(e) => {
-                onFiles(e.target.files)
-                e.currentTarget.value = ""
+              enablePaste
+              title={files.length > 0 ? "Drag & drop more images here, or browse" : "Drag & drop images here, or browse"}
+              description="Supports JPG, PNG, and WebP images · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFiles([])
+                reset()
               }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {files.length > 0 ? "Add more images" : "Choose images"}
-            </Button>
             {files.length > 0 && (
               <div className="mt-3 space-y-1">
                 {files.map((f, i) => (

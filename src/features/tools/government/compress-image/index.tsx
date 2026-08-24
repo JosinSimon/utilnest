@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runCompress, type CompressToolOutput } from "./engine"
 import type { TargetKbOptions } from "@/features/tools/shared/image"
@@ -44,7 +45,6 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const jobRef = useRef<{ cancel: () => void } | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -132,27 +132,28 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="image/jpeg,image/png"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              enablePaste
+              title="Drag & drop your image here, or browse"
+              description="Compress image to exact target KB · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFile(null)
+                setOutput(null)
+                setPreview(null)
+                setError(null)
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another image" : "Choose an image"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
             {preview && (
-              <img
-                src={preview}
-                alt="Upload preview"
-                className="mt-3 max-h-48 rounded-lg border object-contain"
-              />
+              <div className="mt-3 flex justify-center rounded-xl border bg-muted/20 p-2">
+                <img
+                  src={preview}
+                  alt="Upload preview"
+                  className="max-h-48 rounded-lg object-contain"
+                />
+              </div>
             )}
           </div>
 

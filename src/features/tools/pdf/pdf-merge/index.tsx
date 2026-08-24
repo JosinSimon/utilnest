@@ -1,16 +1,16 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ArrowDown, ArrowUp, X } from "lucide-react"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import { runPdfMerge, type PdfMergeOutput } from "./engine"
 
 export default function PdfMerge({ tool }: { tool: ToolDefinition }) {
   const [files, setFiles] = useState<File[]>([])
-  const inputRef = useRef<HTMLInputElement>(null)
   const [warning, setWarning] = useState<string | null>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<PdfMergeOutput>(
@@ -19,10 +19,11 @@ export default function PdfMerge({ tool }: { tool: ToolDefinition }) {
   )
 
   const onFiles = useCallback(
-    (list: FileList | null) => {
-      if (!list?.length) return
+    (list: FileList | File[] | null) => {
+      if (!list) return
+      const incoming = Array.isArray(list) ? list : Array.from(list)
+      if (!incoming.length) return
       setWarning(null)
-      const incoming = Array.from(list)
       const accepted: File[] = []
       let skipped = 0
       for (const f of incoming) {
@@ -51,26 +52,19 @@ export default function PdfMerge({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              files={files}
               multiple
+              onFiles={onFiles}
               accept="application/pdf"
-              className="hidden"
-              onChange={(e) => {
-                onFiles(e.target.files)
-                e.currentTarget.value = ""
+              title={files.length > 0 ? "Drag & drop more PDFs here, or browse" : "Drag & drop PDF files here, or browse"}
+              description="Select multiple PDFs to merge in order"
+              onClear={() => {
+                setFiles([])
+                reset()
+                setWarning(null)
               }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {files.length > 0 ? "Add more PDFs" : "Choose PDFs"}
-            </Button>
-            {files.length > 0 && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {files.length} file{files.length > 1 ? "s" : ""} ·{" "}
-                {formatBytes(files.reduce((s, f) => s + f.size, 0))}
-              </p>
-            )}
             {warning && <p className="mt-2 text-xs text-amber-600">{warning}</p>}
           </div>
 

@@ -1,8 +1,9 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import { runPdfProtect, type PdfProtectOutput } from "./engine"
@@ -12,7 +13,6 @@ export default function PdfProtect({ tool }: { tool: ToolDefinition }) {
   const [pw, setPw] = useState("")
   const [pw2, setPw2] = useState("")
   const [ownerPw, setOwnerPw] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<PdfProtectOutput>(
     "file",
@@ -63,24 +63,17 @@ export default function PdfProtect({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="application/pdf"
-              className="hidden"
-              onChange={(e) => {
-                onFile(e.target.files?.[0])
-                e.currentTarget.value = ""
+              title="Drag & drop your PDF here, or browse"
+              description="Encrypt PDF with a password entirely in your browser"
+              onClear={() => {
+                setFile(null)
+                reset()
               }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another PDF" : "Choose a PDF"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
           </div>
 
           <div className="space-y-1.5">

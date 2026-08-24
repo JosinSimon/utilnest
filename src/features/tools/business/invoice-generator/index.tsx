@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { printDocument, downloadPdf } from "@/features/tools/business/shared/documentHelpers"
 import { convertNumberToWords } from "@/features/tools/business/shared/numberToWords"
 import { formatINR } from "@/lib/utils"
@@ -33,22 +34,24 @@ export default function InvoiceGenerator({ tool: _tool }: { tool: ToolDefinition
   const [notes, setNotes] = useState("Thank you for your business.")
   const [terms, setTerms] = useState("Payment due within 30 days.")
   const [logoUrl, setLogoUrl] = useState<string>("")
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoError, setLogoError] = useState<string | null>(null)
 
   const [items, setItems] = useState<LineItem[]>([
     { id: crypto.randomUUID(), description: "", qty: 1, unitPrice: 0, discountPct: 0, gstRate: 18 }
   ])
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (file.size > 200 * 1024) {
-        alert("File is too large. Max 200KB")
-        return
-      }
-      const reader = new FileReader()
-      reader.onload = (event) => setLogoUrl(event.target?.result as string)
-      reader.readAsDataURL(file)
+  const handleLogoFile = (file: File | undefined) => {
+    if (!file) return
+    if (file.size > 200 * 1024) {
+      setLogoError("File is too large. Max 200KB")
+      return
     }
+    setLogoError(null)
+    setLogoFile(file)
+    const reader = new FileReader()
+    reader.onload = (event) => setLogoUrl(event.target?.result as string)
+    reader.readAsDataURL(file)
   }
 
   const totals = useMemo(() => computeDocumentTotals(items, invoiceMeta.interState), [items, invoiceMeta.interState])
@@ -82,10 +85,26 @@ export default function InvoiceGenerator({ tool: _tool }: { tool: ToolDefinition
             <CardContent className="grid gap-4 sm:grid-cols-2">
               <div className="sm:col-span-2 space-y-2">
                 <Label>Business Logo (Max 200KB)</Label>
-                <div className="flex items-center gap-4">
-                  <Input type="file" accept="image/png, image/jpeg" onChange={handleLogoUpload} className="w-full" />
-                  {logoUrl && <img src={logoUrl} alt="Logo" className="h-10 object-contain" />}
-                </div>
+                <FileDropzone
+                  file={logoFile}
+                  onFile={handleLogoFile}
+                  accept="image/png,image/jpeg"
+                  compact
+                  title="Drag & drop logo here, or browse"
+                  description="PNG or JPG (Max 200 KB)"
+                  onClear={() => {
+                    setLogoFile(null)
+                    setLogoUrl("")
+                    setLogoError(null)
+                  }}
+                />
+                {logoError && <p className="text-xs text-destructive">{logoError}</p>}
+                {logoUrl && (
+                  <div className="mt-2 flex items-center gap-3">
+                    <img src={logoUrl} alt="Logo preview" className="h-10 max-w-[120px] rounded border object-contain p-1" />
+                    <span className="text-xs text-muted-foreground">Logo ready for invoice preview</span>
+                  </div>
+                )}
               </div>
               <div className="space-y-2"><Label>Business Name</Label><Input value={businessInfo.name} onChange={e => setBusinessInfo({...businessInfo, name: e.target.value})} /></div>
               <div className="space-y-2"><Label>GSTIN (Optional)</Label><Input value={businessInfo.gstin} onChange={e => setBusinessInfo({...businessInfo, gstin: e.target.value})} /></div>

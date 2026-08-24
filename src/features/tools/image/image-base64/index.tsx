@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { SegmentedControl } from "@/components/ui/segmented"
 import { Label } from "@/components/ui/label"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { encodeImage, decodeBase64, MAX_ENCODE_BYTES } from "./engine"
 import type { Base64Mode } from "./engine"
@@ -15,7 +16,6 @@ export default function ImageBase64({ tool }: { tool: ToolDefinition }) {
   const [output, setOutput] = useState<string>("")
   const [decoded, setDecoded] = useState<{ url: string; bytes: number; mime: string; fileName: string } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
   const decodedUrlRef = useRef<string | null>(null)
 
   useEffect(() => {
@@ -106,26 +106,24 @@ export default function ImageBase64({ tool }: { tool: ToolDefinition }) {
           {mode === "encode" ? (
             <>
               <div>
-                <input
-                  ref={inputRef}
-                  type="file"
+                <FileDropzone
+                  file={file}
+                  onFile={onFile}
                   accept="image/*"
-                  className="hidden"
-                  onChange={(e) => onFile(e.target.files?.[0])}
+                  enablePaste
+                  title="Drag & drop your image here, or browse"
+                  description="Supports JPG, PNG, WebP, AVIF, SVG · Paste with Ctrl+V / Cmd+V"
+                  hint={
+                    file && file.size > MAX_ENCODE_BYTES
+                      ? "File is over the 2 MB limit for Base64 encoding"
+                      : undefined
+                  }
+                  onClear={() => {
+                    setFile(null)
+                    setOutput("")
+                    setError(null)
+                  }}
                 />
-                <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-                  {file ? "Choose another image" : "Choose an image"}
-                </Button>
-                {file && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    {file.name} · {formatBytes(file.size)} ·{" "}
-                    {file.size > MAX_ENCODE_BYTES ? (
-                      <span className="text-amber-700">over the 2 MB limit</span>
-                    ) : (
-                      "OK to encode"
-                    )}
-                  </p>
-                )}
               </div>
               <Button
                 type="button"

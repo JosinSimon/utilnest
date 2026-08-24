@@ -1,10 +1,11 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import {
   runWatermark,
@@ -38,8 +39,6 @@ export default function ImageWatermark({ tool }: { tool: ToolDefinition }) {
   const [output, setOutput] = useState<{ blob: Blob; fileName: string; bytes: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const logoRef = useRef<HTMLInputElement>(null)
 
   const onFile = useCallback((f: File | undefined) => {
     if (!f) return
@@ -95,27 +94,27 @@ export default function ImageWatermark({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="image/*"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              enablePaste
+              title="Drag & drop your main image here, or browse"
+              description="Supports JPG, PNG, WebP · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFile(null)
+                setPreview(null)
+                setOutput(null)
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another image" : "Choose an image"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
             {preview && (
-              <img
-                src={preview}
-                alt="Upload preview"
-                className="mt-3 max-h-48 rounded-lg border object-contain"
-              />
+              <div className="mt-3 flex justify-center rounded-xl border bg-muted/20 p-2">
+                <img
+                  src={preview}
+                  alt="Upload preview"
+                  className="max-h-48 rounded-lg object-contain"
+                />
+              </div>
             )}
           </div>
 
@@ -125,22 +124,21 @@ export default function ImageWatermark({ tool }: { tool: ToolDefinition }) {
               id="wm-text"
               value={text}
               onChange={(e) => setText(e.target.value)}
-              placeholder="e.g. © 2026 Your Name"
+              placeholder="e.g. © 2026 UtilNest"
             />
           </div>
 
-          <div>
-            <input
-              ref={logoRef}
-              type="file"
+          <div className="space-y-1.5">
+            <Label>Or watermark logo image</Label>
+            <FileDropzone
+              file={logo}
+              onFile={onLogo}
               accept="image/png,image/svg+xml,image/jpeg"
-              className="hidden"
-              onChange={(e) => onLogo(e.target.files?.[0])}
+              compact
+              title="Drag & drop watermark logo here, or browse"
+              description="Recommended: transparent PNG or SVG"
+              onClear={() => setLogo(null)}
             />
-            <Button type="button" variant="outline" onClick={() => logoRef.current?.click()}>
-              {logo ? "Change logo" : "Or upload a logo image"}
-            </Button>
-            {logo && <p className="mt-1 text-xs text-muted-foreground">{logo.name}</p>}
           </div>
 
           <div className="space-y-2">

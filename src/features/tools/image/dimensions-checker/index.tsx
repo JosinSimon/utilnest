@@ -1,7 +1,7 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { readImageDimensions, type DimensionsInfo } from "./engine"
 
@@ -10,7 +10,6 @@ export default function DimensionsChecker({ tool }: { tool: ToolDefinition }) {
   const [info, setInfo] = useState<DimensionsInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const onFile = useCallback(async (f: File | undefined) => {
     if (!f) return
@@ -39,27 +38,28 @@ export default function DimensionsChecker({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="image/jpeg,image/png"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              enablePaste
+              title="Drag & drop your image here, or browse"
+              description="Supports JPG and PNG · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFile(null)
+                setInfo(null)
+                setPreview(null)
+                setError(null)
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another image" : "Choose an image"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
             {preview && (
-              <img
-                src={preview}
-                alt="Upload preview"
-                className="mt-3 max-h-48 rounded-lg border object-contain"
-              />
+              <div className="mt-3 flex justify-center rounded-xl border bg-muted/20 p-2">
+                <img
+                  src={preview}
+                  alt="Upload preview"
+                  className="max-h-48 rounded-lg object-contain"
+                />
+              </div>
             )}
           </div>
 

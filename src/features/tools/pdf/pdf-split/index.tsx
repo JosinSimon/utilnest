@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import { runPdfSplit, type PdfSplitOutput } from "./engine"
@@ -14,7 +15,6 @@ export default function PdfSplit({ tool }: { tool: ToolDefinition }) {
   const [file, setFile] = useState<File | null>(null)
   const [mode, setMode] = useState<SplitMode>("single")
   const [cutText, setCutText] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<PdfSplitOutput>(
     "file",
@@ -63,24 +63,17 @@ const apply = useCallback(() => {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="application/pdf"
-              className="hidden"
-              onChange={(e) => {
-                onFile(e.target.files?.[0])
-                e.currentTarget.value = ""
+              title="Drag & drop your PDF file here, or browse"
+              description="Separate PDF pages or extract custom ranges"
+              onClear={() => {
+                setFile(null)
+                reset()
               }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another PDF" : "Choose a PDF"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
           </div>
 
           <div className="space-y-2">

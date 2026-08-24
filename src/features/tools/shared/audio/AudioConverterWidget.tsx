@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState, useEffect } from "react"
-import { Upload, Music, Download, Play, Pause, RefreshCw, CheckCircle2, Shield } from "lucide-react"
+import { useCallback, useState, useEffect, useRef } from "react"
+import { Download, Play, Pause, RefreshCw, CheckCircle2, Shield } from "lucide-react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runAudioConvert } from "./driver"
 import type { AudioBitrate, AudioOutputFormat, AudioConvertOutput } from "./types"
@@ -27,7 +28,7 @@ export function AudioConverterWidget({
   tool,
   targetFormat,
   acceptedExtensions = "audio/*,.amr,.m4a,.wav,.mp3,.aac,.ogg,.opus,.webm",
-  hintText = "Drag and drop your audio file or click to browse",
+  hintText = "Supports MP3, WAV, M4A, AMR, AAC, OGG, Opus, WebM",
 }: AudioConverterWidgetProps) {
   const [file, setFile] = useState<File | null>(null)
   const [bitrate, setBitrate] = useState<AudioBitrate>(128)
@@ -38,7 +39,6 @@ export function AudioConverterWidget({
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
 
-  const inputRef = useRef<HTMLInputElement>(null)
   const audioPlayerRef = useRef<HTMLAudioElement | null>(null)
 
   useEffect(() => {
@@ -92,15 +92,17 @@ export function AudioConverterWidget({
   }, [file, targetFormat, bitrate])
 
   const download = useCallback(() => {
-    if (!output || !audioUrl) return
+    if (!output) return
+    const url = URL.createObjectURL(output.blob)
     const a = document.createElement("a")
-    a.href = audioUrl
+    a.href = url
     a.download = output.fileName
     a.click()
-  }, [output, audioUrl])
+    URL.revokeObjectURL(url)
+  }, [output])
 
-  const togglePlayback = useCallback(() => {
-    if (!audioPlayerRef.current) return
+  const togglePlayback = () => {
+    if (!audioPlayerRef.current || !audioUrl) return
     if (isPlaying) {
       audioPlayerRef.current.pause()
       setIsPlaying(false)
@@ -108,9 +110,9 @@ export function AudioConverterWidget({
       audioPlayerRef.current
         .play()
         .then(() => setIsPlaying(true))
-        .catch(() => setIsPlaying(false))
+        .catch((e) => console.error("Playback failed:", e))
     }
-  }, [isPlaying])
+  }
 
   const formatDuration = (seconds: number): string => {
     if (!seconds || isNaN(seconds)) return "0:00"
@@ -130,29 +132,24 @@ export function AudioConverterWidget({
         </CardHeader>
         <CardContent className="space-y-6">
           {/* File Selector Dropzone */}
-          <div
-            onClick={() => inputRef.current?.click()}
-            className={cn(
-              "group relative flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-border/80 bg-muted/30 p-8 text-center transition-all hover:border-primary/60 hover:bg-muted/50",
-              file && "border-primary/40 bg-primary/5",
-            )}
-          >
-            <input
-              ref={inputRef}
-              type="file"
+          <div>
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept={acceptedExtensions}
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              title="Drag & drop your audio file here, or browse"
+              description={hintText}
+              onClear={() => {
+                setFile(null)
+                setOutput(null)
+                setError(null)
+                setIsPlaying(false)
+                if (audioUrl) {
+                  URL.revokeObjectURL(audioUrl)
+                  setAudioUrl(null)
+                }
+              }}
             />
-            <div className="flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary transition-transform group-hover:scale-110">
-              {file ? <Music className="size-7" /> : <Upload className="size-7" />}
-            </div>
-            <p className="mt-4 font-semibold text-foreground text-base">
-              {file ? file.name : "Choose an audio file"}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {file ? `${formatBytes(file.size)} · Click to change file` : hintText}
-            </p>
           </div>
 
           {/* Bitrate Selector for MP3 */}

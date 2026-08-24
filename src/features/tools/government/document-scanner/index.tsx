@@ -1,9 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { createPdf, type ScanOutput } from "./engine"
 
@@ -25,13 +26,11 @@ export default function DocumentScanner({ tool }: { tool: ToolDefinition }) {
   const [output, setOutput] = useState<ScanOutput | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [previews, setPreviews] = useState<string[]>([])
-  const inputRef = useRef<HTMLInputElement>(null)
 
-  const totalBytes = useMemo(() => files.reduce((sum, f) => sum + f.size, 0), [files])
-
-  const onFiles = useCallback((list: FileList | null) => {
-    if (!list || list.length === 0) return
-    const next = Array.from(list)
+  const onFiles = useCallback((list: FileList | File[] | null) => {
+    if (!list) return
+    const next = Array.isArray(list) ? list : Array.from(list)
+    if (next.length === 0) return
     setFiles((prev) => [...prev, ...next])
     setOutput(null)
     setError(null)
@@ -89,22 +88,22 @@ export default function DocumentScanner({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
-              accept="image/jpeg,image/png"
+            <FileDropzone
+              files={files}
               multiple
-              className="hidden"
-              onChange={(e) => onFiles(e.target.files)}
+              onFiles={onFiles}
+              accept="image/jpeg,image/png"
+              enablePaste
+              title={files.length > 0 ? "Drag & drop more document pages here, or browse" : "Drag & drop document pages here, or browse"}
+              description="Supports JPG and PNG · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                previews.forEach((p) => URL.revokeObjectURL(p))
+                setFiles([])
+                setPreviews([])
+                setOutput(null)
+                setError(null)
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              Add pages
-            </Button>
-            {files.length > 0 && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {files.length} page{files.length > 1 ? "s" : ""} · {formatBytes(totalBytes)}
-              </p>
-            )}
             {previews.length > 0 && (
               <div className="mt-3 flex flex-wrap gap-2">
                 {previews.map((src, i) => (

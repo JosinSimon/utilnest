@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import { runPdfRotate, type PdfRotateOutput } from "./engine"
@@ -21,7 +22,6 @@ export default function PdfRotate({ tool }: { tool: ToolDefinition }) {
   const [file, setFile] = useState<File | null>(null)
   const [angle, setAngle] = useState<AngleValue>("90")
   const [pages, setPages] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<PdfRotateOutput>(
     "file",
@@ -64,24 +64,17 @@ export default function PdfRotate({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="application/pdf"
-              className="hidden"
-              onChange={(e) => {
-                onFile(e.target.files?.[0])
-                e.currentTarget.value = ""
+              title="Drag & drop your PDF here, or browse"
+              description="Rotate 90°, 180°, or 270° clockwise"
+              onClear={() => {
+                setFile(null)
+                reset()
               }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another PDF" : "Choose a PDF"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
           </div>
 
           {file && (

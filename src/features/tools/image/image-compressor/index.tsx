@@ -1,21 +1,22 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runImageCompress, type ImageCompressOutput } from "./engine"
 
 const PRESETS = [20, 50, 100, 200, 500]
 
-export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {  const [file, setFile] = useState<File | null>(null)
+export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {
+  const [file, setFile] = useState<File | null>(null)
   const [kbMax, setKbMax] = useState(50)
   const [running, setRunning] = useState(false)
   const [output, setOutput] = useState<ImageCompressOutput | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const onFile = useCallback((f: File | undefined) => {
     if (!f) return
@@ -67,27 +68,27 @@ export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {  c
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="image/*"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0])}
+              enablePaste
+              title="Drag & drop your image here, or browse"
+              description="Supports JPG, PNG, WebP, AVIF · Paste with Ctrl+V / Cmd+V"
+              onClear={() => {
+                setFile(null)
+                setPreview(null)
+                setOutput(null)
+              }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another image" : "Choose an image"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-              </p>
-            )}
             {preview && (
-              <img
-                src={preview}
-                alt="Upload preview"
-                className="mt-3 max-h-48 rounded-lg border object-contain"
-              />
+              <div className="mt-3 flex justify-center rounded-xl border bg-muted/20 p-2">
+                <img
+                  src={preview}
+                  alt="Upload preview"
+                  className="max-h-48 rounded-lg object-contain"
+                />
+              </div>
             )}
           </div>
 

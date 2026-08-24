@@ -1,9 +1,10 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { ArrowDown, ArrowUp, X } from "lucide-react"
+import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { useEngine } from "@/features/tools/useEngine"
 import { runPageManager, type PageManagerOutput } from "./engine"
@@ -14,7 +15,6 @@ export default function PdfPageManager({ tool }: { tool: ToolDefinition }) {
   const [pageCount, setPageCount] = useState(0)
   const [kept, setKept] = useState<number[]>([]) // ordered 1-based kept pages
   const [loading, setLoading] = useState(false)
-  const inputRef = useRef<HTMLInputElement>(null)
 
   const { result, progress, isRunning, error, run, reset } = useEngine<PageManagerOutput>(
     "file",
@@ -84,25 +84,20 @@ export default function PdfPageManager({ tool }: { tool: ToolDefinition }) {
         </CardHeader>
         <CardContent className="space-y-5">
           <div>
-            <input
-              ref={inputRef}
-              type="file"
+            <FileDropzone
+              file={file}
+              onFile={onFile}
               accept="application/pdf"
-              className="hidden"
-              onChange={(e) => {
-                onFile(e.target.files?.[0])
-                e.currentTarget.value = ""
+              title="Drag & drop your PDF here, or browse"
+              description="Reorder, remove, or organize PDF pages"
+              hint={file ? (loading ? "Reading PDF…" : `${pageCount} pages total`) : undefined}
+              onClear={() => {
+                setFile(null)
+                setPageCount(0)
+                setKept([])
+                reset()
               }}
             />
-            <Button type="button" variant="outline" onClick={() => inputRef.current?.click()}>
-              {file ? "Choose another PDF" : "Choose a PDF"}
-            </Button>
-            {file && (
-              <p className="mt-2 text-xs text-muted-foreground">
-                {file.name} · {formatBytes(file.size)}
-                {loading ? " · reading…" : ` · ${pageCount} pages`}
-              </p>
-            )}
           </div>
 
           {file && pageCount > 0 && !loading && (
