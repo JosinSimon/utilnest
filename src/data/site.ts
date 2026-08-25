@@ -16,6 +16,7 @@ export const site = {
   gaId: "",
   clarityId: "",
   legalEmail: "support@utilnest.in",
+  logoImage: `${SITE_URL}/icon-512.png`,
   defaultOgImage: `${SITE_URL}/og/default.png`,
 } as const
 

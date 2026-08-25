@@ -3,7 +3,8 @@ import { headForRoute } from "@/app/prerender-head"
 import { seoTitleFor, seoTitleForCategory } from "@/data/derive"
 import { getToolBySlug, allTools } from "@/data/registry"
 import { categories, categoryBySlug } from "@/data/categories"
-import { categorySeoData, toolSeoData } from "./seo-data"
+import { site } from "@/data/site"
+import { categorySeoData, organizationJsonLd, toolSeoData } from "./seo-data"
 
 describe("SEO data", () => {
   it("builds clean tool titles without duplicated type words", () => {
@@ -35,12 +36,16 @@ describe("SEO data", () => {
     expect(head).toContain("Are all image tools on UtilNest 100% free?")
   })
 
-  it("uses a real shared OG image instead of missing per-page image paths", () => {
+  it("uses separate square logo and wide OG preview images", () => {
     const emi = getToolBySlug("emi-calculator")!
     const image = categoryBySlug("image")!
 
-    expect(toolSeoData(emi).og.image).toBe("https://utilnest.in/og/default.png")
-    expect(categorySeoData(image).og.image).toBe("https://utilnest.in/og/default.png")
+    expect(site.logoImage).toBe("https://utilnest.in/icon-512.png")
+    expect(site.defaultOgImage).toBe("https://utilnest.in/og/default.png")
+    expect(organizationJsonLd().logo).toBe(site.logoImage)
+    expect(organizationJsonLd().logo).not.toBe(site.defaultOgImage)
+    expect(toolSeoData(emi).og.image).toBe(site.defaultOgImage)
+    expect(categorySeoData(image).og.image).toBe(site.defaultOgImage)
   })
 
   it("keeps every tool title and description clean for search snippets", () => {

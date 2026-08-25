@@ -114,7 +114,7 @@ export function organizationJsonLd(): JsonLd {
     "@type": "Organization",
     name: site.name,
     url: site.url,
-    logo: site.defaultOgImage,
+    logo: site.logoImage,
   }
 }
 
