@@ -101,11 +101,146 @@ export async function protectPdf(
   return encryptPDF(bytes, opts.userPassword, { ownerPassword: owner })
 }
 
-/** Remove password protection (decrypt) with the supplied password. */
-export async function unlockPdf(bytes: Uint8Array, password: string): Promise<Uint8Array> {
-  const { decryptPDF } = await import("@pdfsmaller/pdf-decrypt")
-  return decryptPDF(bytes, password)
+function getQpdfWasmUrl(): string {
+  if (typeof window !== "undefined") {
+    const base = ((import.meta as unknown) as { env?: { BASE_URL?: string } }).env?.BASE_URL || "/"
+    return `${base.replace(/\/$/, "")}/wasm/qpdf.wasm`
+  }
+  return "public/wasm/qpdf.wasm"
 }
+
+/** Check if a PDF document has password protection or encryption */
+export async function isPdfEncrypted(bytes: Uint8Array): Promise<boolean> {
+  try {
+    const doc = await PDFDocument.load(bytes, { ignoreEncryption: true })
+    return Boolean(doc.context.trailerInfo.Encrypt)
+  } catch {
+    // If PDFDocument.load fails to parse due to encrypted object streams, it is encrypted
+    return true
+  }
+}
+
+/**
+ * Remove password protection (decrypt) with the supplied password using QPDF WebAssembly.
+ * Supports all PDF encryption standards: AES-128, AES-256 (R5/R6), RC4, and encrypted object streams.
+ */
+export async function unlockPdf(bytes: Uint8Array, password: string): Promise<Uint8Array> {
+  const isEncrypted = await isPdfEncrypted(bytes)
+  if (!isEncrypted) {
+    throw new Error("This PDF is not password-protected.")
+  }
+
+  const { default: createQpdf } = await import("@neslinesli93/qpdf-wasm")
+
+  let capturedErr = ""
+  const origError = console.error
+  const wasmUrl = getQpdfWasmUrl()
+
+  console.error = (...args: unknown[]) => {
+    capturedErr += args.map((a) => String(a)).join(" ") + "\n"
+    origError(...args)
+  }
+
+  let qpdf: any
+  try {
+    qpdf = await (createQpdf as unknown as (opts: Record<string, unknown>) => Promise<any>)({
+      locateFile: () => wasmUrl,
+      print: () => {},
+      printErr: (msg: string) => {
+        capturedErr += msg + "\n"
+      },
+    })
+  } finally {
+    console.error = origError
+  }
+
+  const id = `${Date.now()}_${Math.random().toString(36).slice(2)}`
+  const inPath = `/in_${id}.pdf`
+  const outPath = `/out_${id}.pdf`
+
+  try {
+    ;(qpdf.FS as unknown as { writeFile: (path: string, data: Uint8Array) => void }).writeFile(
+      inPath,
+      bytes,
+    )
+
+    // Try user's exact password first, then common variations (e.g. trimmed, uppercase/lowercase for bank statements)
+    const candidates = Array.from(
+      new Set([
+        password,
+        password.trim(),
+        password.trim().toUpperCase(),
+        password.trim().toLowerCase(),
+      ]),
+    ).filter((p) => p.length > 0)
+
+    let decrypted: Uint8Array | null = null
+
+    for (const candidate of candidates) {
+      try {
+        ;(qpdf.FS as unknown as { unlink: (path: string) => void }).unlink(outPath)
+      } catch {}
+
+      capturedErr = ""
+      console.error = (...args: unknown[]) => {
+        capturedErr += args.map((a) => String(a)).join(" ") + "\n"
+        origError(...args)
+      }
+
+      try {
+        const args = [
+          "--warning-exit-0",
+          "--decrypt",
+          `--password=${candidate}`,
+          inPath,
+          outPath,
+        ]
+        qpdf.callMain(args)
+      } catch {
+        // callMain may throw ExitStatus
+      } finally {
+        console.error = origError
+      }
+
+      try {
+        const data = (
+          qpdf.FS as unknown as { readFile: (path: string) => Uint8Array }
+        ).readFile(outPath)
+        if (data && data.length > 0) {
+          decrypted = data
+          break
+        }
+      } catch {}
+    }
+
+    if (decrypted && decrypted.length > 0) {
+      return decrypted
+    }
+
+    // If none of the candidates succeeded in decrypting:
+    if (/not encrypted/i.test(capturedErr)) {
+      throw new Error("This PDF is not password-protected.")
+    }
+    if (/invalid password/i.test(capturedErr) || /password/i.test(capturedErr)) {
+      throw new Error("Incorrect password. Please verify the password and try again.")
+    }
+    if (/damaged|corrupt/i.test(capturedErr)) {
+      throw new Error("Could not unlock this PDF because the file appears to be damaged.")
+    }
+
+    throw new Error(
+      capturedErr.trim() || "Incorrect password. Please verify the password and try again.",
+    )
+  } finally {
+    try {
+      ;(qpdf.FS as unknown as { unlink: (path: string) => void }).unlink(inPath)
+    } catch {}
+    try {
+      ;(qpdf.FS as unknown as { unlink: (path: string) => void }).unlink(outPath)
+    } catch {}
+  }
+}
+
 
 export interface TextWatermarkOptions {
   text: string

@@ -46,7 +46,7 @@ export function runPdfUnlock(input: PdfUnlockInput): FileJob<PdfUnlockOutput> {
         data: undefined as unknown as PdfUnlockOutput,
         error: {
           code: "pdf_unlock_error",
-          message: /password/i.test(message) ? message : "Could not unlock this PDF.",
+          message: message || "Could not unlock this PDF.",
         },
         meta: { bytesIn: 0, bytesOut: 0, durationMs: 0 },
       }
