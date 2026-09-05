@@ -23,10 +23,11 @@ function extractAssets(template: string): {
   const modulepreloads = template.match(/<link rel="modulepreload"[^>]*>/g) ?? []
   const scripts = template.match(/<script[^>]*><\/script>|<script[^>]*>[\s\S]*?<\/script>/g) ?? []
   const rootMatch = template.match(/<div id="root"><\/div>|<div id="root"[\s\S]*?<\/div>/)
+  const appScripts = scripts.filter((script) => !script.includes("G-2CT0YQ1VHW"))
 
   return {
     headLinks: [...styleLinks, ...modulepreloads].join("\n    "),
-    bodyScripts: scripts.join("\n    "),
+    bodyScripts: appScripts.join("\n    "),
     rootMarker: rootMatch?.[0] ?? '<div id="root"></div>',
   }
 }
