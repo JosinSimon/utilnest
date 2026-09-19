@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,6 +8,8 @@ import { SegmentedControl } from "@/components/ui/segmented"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runCompress, type CompressToolOutput } from "./engine"
+import { processFilesSequentially, uniqueFileName } from "@/features/tools/shared/batch"
+import { zipBlobs } from "@/features/tools/shared/zip"
 import type { TargetKbOptions } from "@/features/tools/shared/image"
 
 type Mode = "range" | "exact"
@@ -29,7 +31,7 @@ function parseDimensions(w: string, h: string): { width?: number; height?: numbe
 }
 
 export default function CompressImage({ tool }: { tool: ToolDefinition }) {
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const targetKb = tool.preset?.targetKb ?? 50
   const [form, setForm] = useState<FormState>({
     mode: "range",
@@ -41,20 +43,23 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     allowDownscale: true,
   })
   const [running, setRunning] = useState(false)
-  const [output, setOutput] = useState<CompressToolOutput | null>(null)
+  const [outputs, setOutputs] = useState<CompressToolOutput[]>([])
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
-  const jobRef = useRef<{ cancel: () => void } | null>(null)
+
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
 
-  const onFile = useCallback((f: File | undefined) => {
-    if (!f) return
-    setFile(f)
-    setOutput(null)
+  const onFiles = useCallback((incoming: File[]) => {
+    if (incoming.length === 0) return
+    setFiles((previous) => [...previous, ...incoming])
+    setOutputs([])
     setError(null)
-    setPreview(URL.createObjectURL(f))
+    setPreview((previous) => {
+      if (previous) URL.revokeObjectURL(previous)
+      return URL.createObjectURL(incoming[0])
+    })
   }, [])
 
   const buildTarget = useCallback((): TargetKbOptions | null => {
@@ -87,7 +92,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
   }, [form])
 
   const compress = useCallback(async () => {
-    if (!file) return
+    if (files.length === 0) return
     const target = buildTarget()
     if (!target) {
       setError("Enter a valid target size (in KB).")
@@ -95,30 +100,53 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     }
     setRunning(true)
     setError(null)
-    setOutput(null)
-    const job = runCompress({ file, target })
-    jobRef.current = job
-    const result = await job.result
+    setOutputs([])
+    const results = await processFilesSequentially(
+      files,
+      async (file, onFileProgress) => {
+        const job = runCompress({ file, target })
+        job.onProgress(onFileProgress)
+        const result = await job.result
+        if (!result.success) throw new Error(result.error?.message ?? "Compression failed.")
+        return result.data
+      },
+      () => {},
+    )
+    const successful = results.flatMap((result) => (result.data ? [result.data] : []))
+    const failed = results.filter((result) => result.error)
+    setOutputs(successful)
     setRunning(false)
-    if (!result.success) {
-      setError(result.error?.message ?? "Compression failed.")
-      return
+    const warnings = successful.filter((result) => result.status !== "ok").length
+    if (failed.length > 0 || warnings > 0) {
+      setError(`${failed.length + warnings} file${failed.length + warnings === 1 ? "" : "s"} need attention.`)
     }
-    setOutput(result.data)
-    if (result.data.status !== "ok") {
-      setError(result.data.message)
-    }
-  }, [buildTarget, file])
+  }, [buildTarget, files])
 
-  const download = useCallback(() => {
-    if (!output) return
+  const download = useCallback((output: CompressToolOutput) => {
     const url = URL.createObjectURL(output.blob)
     const a = document.createElement("a")
     a.href = url
     a.download = output.fileName
     a.click()
     URL.revokeObjectURL(url)
-  }, [output])
+  }, [])
+
+  const downloadAll = useCallback(async () => {
+    if (outputs.length === 0) return
+    const usedNames = new Set<string>()
+    const archive = await zipBlobs(
+      outputs.map((output) => ({
+        name: uniqueFileName(output.fileName, usedNames),
+        blob: output.blob,
+      })),
+    )
+    const url = URL.createObjectURL(archive)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${tool.slug}-compressed.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [outputs, tool.slug])
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -133,16 +161,18 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
         <CardContent className="space-y-5">
           <div>
             <FileDropzone
-              file={file}
-              onFile={onFile}
+              files={files}
+              multiple
+              onFiles={onFiles}
               accept="image/jpeg,image/png"
               enablePaste
-              title="Drag & drop your image here, or browse"
+              title={files.length > 0 ? "Drag & drop more images here, or browse" : "Drag & drop images here, or browse"}
               description="Compress image to exact target KB · Paste with Ctrl+V / Cmd+V"
               onClear={() => {
-                setFile(null)
-                setOutput(null)
+                setFiles([])
+                if (preview) URL.revokeObjectURL(preview)
                 setPreview(null)
+                setOutputs([])
                 setError(null)
               }}
             />
@@ -249,15 +279,15 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
             </span>
           </label>
 
-          <Button type="button" onClick={compress} disabled={!file || running} className="w-full">
-            {running ? "Compressing…" : "Compress image"}
+          <Button type="button" onClick={compress} disabled={files.length === 0 || running} className="w-full">
+            {running ? "Compressing…" : `Compress ${files.length > 1 ? `${files.length} images` : "image"}`}
           </Button>
 
           {error && (
             <p
               className={cn(
                 "rounded-lg border px-3 py-2 text-sm",
-                output && output.status !== "ok"
+                outputs[0]?.status !== "ok"
                   ? "border-amber-300 bg-amber-50 text-amber-900"
                   : "border-destructive bg-destructive/10 text-destructive",
               )}
@@ -266,27 +296,27 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
             </p>
           )}
 
-          {output && (
+          {outputs.length > 0 && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Size</span>
-                <span>{formatBytes(output.bytes)}</span>
+                <span>{formatBytes(outputs[0].bytes)}</span>
                 <span className="text-muted-foreground">Dimensions</span>
                 <span>
-                  {output.width} × {output.height} px
+                  {outputs[0].width} × {outputs[0].height} px
                 </span>
                 <span className="text-muted-foreground">Format</span>
-                <span className="uppercase">{output.format}</span>
+                <span className="uppercase">{outputs[0].format}</span>
                 <span className="text-muted-foreground">JPEG quality</span>
-                <span>{Math.round(output.quality * 100)}%</span>
+                <span>{Math.round(outputs[0].quality * 100)}%</span>
               </div>
               <Button
                 type="button"
-                onClick={download}
-                variant={output.status === "ok" ? "default" : "outline"}
+                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                variant={outputs[0].status === "ok" ? "default" : "outline"}
                 className="w-full"
               >
-                Download{output.status !== "ok" ? " (not spec-compliant)" : ""}
+                {outputs.length === 1 ? `Download${outputs[0].status !== "ok" ? " (not spec-compliant)" : ""}` : "Download all as ZIP"}
               </Button>
             </div>
           )}

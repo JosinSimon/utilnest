@@ -8,6 +8,8 @@ import { SegmentedControl } from "@/components/ui/segmented"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runResize, type ResizeToolOutput } from "./engine"
+import { processFilesSequentially, uniqueFileName } from "@/features/tools/shared/batch"
+import { zipBlobs } from "@/features/tools/shared/zip"
 
 type Format = "jpeg" | "png"
 
@@ -18,10 +20,10 @@ interface FormState {
 }
 
 export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [form, setForm] = useState<FormState>({ width: "", height: "", format: "jpeg" })
   const [running, setRunning] = useState(false)
-  const [output, setOutput] = useState<ResizeToolOutput | null>(null)
+  const [outputs, setOutputs] = useState<ResizeToolOutput[]>([])
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [sourceDims, setSourceDims] = useState<{ width: number; height: number } | null>(null)
@@ -45,23 +47,26 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
     })
   }
 
-  const onFile = useCallback(async (f: File | undefined) => {
-    if (!f) return
-    setFile(f)
-    setOutput(null)
+  const onFiles = useCallback(async (incoming: File[]) => {
+    if (incoming.length === 0) return
+    setFiles((previous) => [...previous, ...incoming])
+    setOutputs([])
     setError(null)
     if (downloadUrlRef.current) {
       URL.revokeObjectURL(downloadUrlRef.current)
       downloadUrlRef.current = null
     }
-    const url = URL.createObjectURL(f)
-    setPreview(url)
-    const bitmap = await createImageBitmap(f)
+    setPreview((previous) => {
+      if (previous) URL.revokeObjectURL(previous)
+      return URL.createObjectURL(incoming[0])
+    })
+    const bitmap = await createImageBitmap(incoming[0])
     setSourceDims({ width: bitmap.width, height: bitmap.height })
+    bitmap.close()
   }, [])
 
   const resize = useCallback(async () => {
-    if (!file) return
+    if (files.length === 0) return
     const width = Number(form.width)
     const height = Number(form.height)
     if (!(width > 0) || !(height > 0)) {
@@ -70,26 +75,52 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
     }
     setRunning(true)
     setError(null)
-    setOutput(null)
-    const job = runResize({ file, width, height, format: form.format })
-    const result = await job.result
+    setOutputs([])
+    const results = await processFilesSequentially(
+      files,
+      async (file, onFileProgress) => {
+        const job = runResize({ file, width, height, format: form.format })
+        job.onProgress(onFileProgress)
+        const result = await job.result
+        if (!result.success) throw new Error(result.error?.message ?? "Resize failed.")
+        return result.data
+      },
+      () => {},
+    )
+    const successful = results.flatMap((result) => (result.data ? [result.data] : []))
+    const failed = results.filter((result) => result.error)
+    setOutputs(successful)
     setRunning(false)
-    if (!result.success) {
-      setError(result.error?.message ?? "Resize failed.")
-      return
+    if (failed.length > 0) {
+      setError(`${failed.length} file${failed.length === 1 ? "" : "s"} failed to resize.`)
     }
-    setOutput(result.data)
-  }, [file, form])
+  }, [files, form])
 
-  const download = useCallback(() => {
-    if (!output) return
+  const download = useCallback((output: ResizeToolOutput) => {
     if (downloadUrlRef.current) URL.revokeObjectURL(downloadUrlRef.current)
     downloadUrlRef.current = URL.createObjectURL(output.blob)
     const a = document.createElement("a")
     a.href = downloadUrlRef.current
     a.download = output.fileName
     a.click()
-  }, [output])
+  }, [])
+
+  const downloadAll = useCallback(async () => {
+    if (outputs.length === 0) return
+    const usedNames = new Set<string>()
+    const archive = await zipBlobs(
+      outputs.map((output) => ({
+        name: uniqueFileName(output.fileName, usedNames),
+        blob: output.blob,
+      })),
+    )
+    const url = URL.createObjectURL(archive)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${tool.slug}-resized.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [outputs, tool.slug])
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -103,15 +134,17 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
         <CardContent className="space-y-5">
           <div>
             <FileDropzone
-              file={file}
-              onFile={onFile}
+              files={files}
+              multiple
+              onFiles={onFiles}
               accept="image/jpeg,image/png"
               enablePaste
-              title="Drag & drop your image here, or browse"
+              title={files.length > 0 ? "Drag & drop more images here, or browse" : "Drag & drop images here, or browse"}
               description="Supports JPG and PNG · Paste with Ctrl+V / Cmd+V"
               onClear={() => {
-                setFile(null)
-                setOutput(null)
+                setFiles([])
+                if (preview) URL.revokeObjectURL(preview)
+                setOutputs([])
                 setPreview(null)
                 setSourceDims(null)
                 setError(null)
@@ -173,8 +206,8 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
             />
           </div>
 
-          <Button type="button" onClick={resize} disabled={!file || running} className="w-full">
-            {running ? "Resizing…" : "Resize image"}
+          <Button type="button" onClick={resize} disabled={files.length === 0 || running} className="w-full">
+            {running ? "Resizing…" : `Resize ${files.length > 1 ? `${files.length} images` : "image"}`}
           </Button>
 
           {error && (
@@ -183,20 +216,24 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
             </p>
           )}
 
-          {output && (
+          {outputs.length > 0 && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Dimensions</span>
                 <span>
-                  {output.width} × {output.height} px
+                  {outputs[0].width} × {outputs[0].height} px
                 </span>
                 <span className="text-muted-foreground">Size</span>
-                <span>{formatBytes(output.bytes)}</span>
+                <span>{formatBytes(outputs[0].bytes)}</span>
                 <span className="text-muted-foreground">Format</span>
-                <span className={cn("uppercase")}>{output.format}</span>
+                <span className={cn("uppercase")}>{outputs[0].format}</span>
               </div>
-              <Button type="button" onClick={download} className="w-full">
-                Download
+              <Button
+                type="button"
+                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                className="w-full"
+              >
+                {outputs.length === 1 ? "Download" : "Download all as ZIP"}
               </Button>
             </div>
           )}
