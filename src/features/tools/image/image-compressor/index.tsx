@@ -6,55 +6,86 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
+import { processFilesSequentially, uniqueFileName } from "@/features/tools/shared/batch"
+import { zipBlobs } from "@/features/tools/shared/zip"
 import { runImageCompress, type ImageCompressOutput } from "./engine"
 
 const PRESETS = [20, 50, 100, 200, 500]
 
 export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [kbMax, setKbMax] = useState(50)
   const [running, setRunning] = useState(false)
-  const [output, setOutput] = useState<ImageCompressOutput | null>(null)
+  const [outputs, setOutputs] = useState<ImageCompressOutput[]>([])
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
-  const onFile = useCallback((f: File | undefined) => {
-    if (!f) return
-    setFile(f)
-    setOutput(null)
+  const onFiles = useCallback((incoming: File[]) => {
+    if (incoming.length === 0) return
+    setFiles((previous) => [...previous, ...incoming])
+    setOutputs([])
     setError(null)
-    setPreview(URL.createObjectURL(f))
+    setPreview((previous) => {
+      if (previous) URL.revokeObjectURL(previous)
+      return URL.createObjectURL(incoming[0])
+    })
   }, [])
 
   const compress = useCallback(async () => {
-    if (!file) return
+    if (files.length === 0) return
     if (!(kbMax > 0)) {
       setError("Enter a valid target size in KB.")
       return
     }
     setRunning(true)
     setError(null)
-    setOutput(null)
-    const job = runImageCompress({ file, kbMax })
-    const result = await job.result
+    setOutputs([])
+    const results = await processFilesSequentially(
+      files,
+      async (file, onFileProgress) => {
+        const job = runImageCompress({ file, kbMax })
+        job.onProgress(onFileProgress)
+        const result = await job.result
+        if (!result.success) throw new Error(result.error?.message ?? "Compression failed.")
+        return result.data
+      },
+      () => {},
+    )
+    const successful = results.flatMap((result) => (result.data ? [result.data] : []))
+    const failed = results.filter((result) => result.error)
+    setOutputs(successful)
     setRunning(false)
-    if (!result.success) {
-      setError(result.error?.message ?? "Compression failed.")
-      return
+    const warnings = successful.filter((result) => result.status !== "ok").length
+    if (failed.length > 0 || warnings > 0) {
+      setError(`${failed.length + warnings} file${failed.length + warnings === 1 ? "" : "s"} need attention.`)
     }
-    setOutput(result.data)
-    if (result.data.status !== "ok") setError(result.data.message)
-  }, [file, kbMax])
+  }, [files, kbMax])
 
-  const download = useCallback(() => {
-    if (!output) return
+  const download = useCallback((output: ImageCompressOutput) => {
     const url = URL.createObjectURL(output.blob)
     const a = document.createElement("a")
     a.href = url
     a.download = output.fileName
     a.click()
     URL.revokeObjectURL(url)
-  }, [output])
+  }, [])
+
+  const downloadAll = useCallback(async () => {
+    if (outputs.length === 0) return
+    const usedNames = new Set<string>()
+    const archive = await zipBlobs(
+      outputs.map((output) => ({
+        name: uniqueFileName(output.fileName, usedNames),
+        blob: output.blob,
+      })),
+    )
+    const url = URL.createObjectURL(archive)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${tool.slug}-compressed.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [outputs, tool.slug])
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -69,16 +100,18 @@ export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {
         <CardContent className="space-y-5">
           <div>
             <FileDropzone
-              file={file}
-              onFile={onFile}
+              files={files}
+              multiple
+              onFiles={onFiles}
               accept="image/*"
               enablePaste
-              title="Drag & drop your image here, or browse"
+              title={files.length > 0 ? "Drag & drop more images here, or browse" : "Drag & drop images here, or browse"}
               description="Supports JPG, PNG, WebP, AVIF · Paste with Ctrl+V / Cmd+V"
               onClear={() => {
-                setFile(null)
+                setFiles([])
+                if (preview) URL.revokeObjectURL(preview)
                 setPreview(null)
-                setOutput(null)
+                setOutputs([])
               }}
             />
             {preview && (
@@ -124,15 +157,15 @@ export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {
             />
           </div>
 
-          <Button type="button" onClick={compress} disabled={!file || running} className="w-full">
-            {running ? "Compressing…" : "Compress image"}
+          <Button type="button" onClick={compress} disabled={files.length === 0 || running} className="w-full">
+            {running ? "Compressing…" : `Compress ${files.length > 1 ? `${files.length} images` : "image"}`}
           </Button>
 
           {error && (
             <p
               className={cn(
                 "rounded-lg border px-3 py-2 text-sm",
-                output && output.status !== "ok"
+                outputs[0]?.status !== "ok"
                   ? "border-amber-300 bg-amber-50 text-amber-900"
                   : "border-destructive bg-destructive/10 text-destructive",
               )}
@@ -141,27 +174,27 @@ export default function ImageCompressor({ tool }: { tool: ToolDefinition }) {
             </p>
           )}
 
-          {output && (
+          {outputs.length > 0 && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Size</span>
-                <span>{formatBytes(output.bytes)}</span>
+                <span>{formatBytes(outputs[0].bytes)}</span>
                 <span className="text-muted-foreground">Dimensions</span>
                 <span>
-                  {output.width} × {output.height} px
+                  {outputs[0].width} × {outputs[0].height} px
                 </span>
                 <span className="text-muted-foreground">JPEG quality</span>
-                <span>{Math.round(output.quality * 100)}%</span>
+                <span>{Math.round(outputs[0].quality * 100)}%</span>
                 <span className="text-muted-foreground">Original</span>
-                <span>{file ? formatBytes(file.size) : "—"}</span>
+                <span>{files.length === 1 ? formatBytes(files[0].size) : `${files.length} originals`}</span>
               </div>
               <Button
                 type="button"
-                onClick={download}
-                variant={output.status === "ok" ? "default" : "outline"}
+                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                variant={outputs[0].status === "ok" ? "default" : "outline"}
                 className="w-full"
               >
-                Download{output.status !== "ok" ? " (did not reach target)" : ""}
+                {outputs.length === 1 ? `Download${outputs[0].status !== "ok" ? " (did not reach target)" : ""}` : "Download all as ZIP"}
               </Button>
             </div>
           )}

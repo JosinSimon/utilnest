@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
+import { processFilesSequentially, uniqueFileName } from "../batch"
+import { zipBlobs } from "../zip"
 import { runAudioConvert } from "./driver"
 import type { AudioBitrate, AudioOutputFormat, AudioConvertOutput } from "./types"
 
@@ -30,11 +32,11 @@ export function AudioConverterWidget({
   acceptedExtensions = "audio/*,.amr,.m4a,.wav,.mp3,.aac,.ogg,.opus,.webm",
   hintText = "Supports MP3, WAV, M4A, AMR, AAC, OGG, Opus, WebM",
 }: AudioConverterWidgetProps) {
-  const [file, setFile] = useState<File | null>(null)
+  const [files, setFiles] = useState<File[]>([])
   const [bitrate, setBitrate] = useState<AudioBitrate>(128)
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [output, setOutput] = useState<AudioConvertOutput | null>(null)
+  const [outputs, setOutputs] = useState<AudioConvertOutput[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -49,10 +51,8 @@ export function AudioConverterWidget({
     }
   }, [audioUrl])
 
-  const onFile = useCallback((f: File | undefined) => {
-    if (!f) return
-    setFile(f)
-    setOutput(null)
+  const clearResults = useCallback(() => {
+    setOutputs([])
     setError(null)
     setIsPlaying(false)
     if (audioUrl) {
@@ -61,45 +61,75 @@ export function AudioConverterWidget({
     }
   }, [audioUrl])
 
+  const onFiles = useCallback((incoming: File[]) => {
+    if (incoming.length === 0) return
+    setFiles((previous) => [...previous, ...incoming])
+    clearResults()
+  }, [clearResults])
+
   const convert = useCallback(async () => {
-    if (!file) return
+    if (files.length === 0) return
     setRunning(true)
-    setProgress(0.05)
-    setError(null)
-    setOutput(null)
+    setProgress(0)
+    clearResults()
 
-    const job = runAudioConvert({
-      file,
-      format: targetFormat,
-      bitrate,
-    })
+    const results = await processFilesSequentially(
+      files,
+      async (file, onFileProgress) => {
+        const job = runAudioConvert({
+          file,
+          format: targetFormat,
+          bitrate,
+        })
+        job.onProgress(onFileProgress)
+        const result = await job.result
+        if (!result.success) {
+          throw new Error(result.error?.message || "Audio conversion failed.")
+        }
+        return result.data
+      },
+      (p) => setProgress(Math.round(p * 100)),
+    )
 
-    job.onProgress((p) => {
-      setProgress(Math.round(p * 100))
-    })
-
-    const result = await job.result
+    const successful = results.flatMap((result) => (result.data ? [result.data] : []))
+    const failed = results.filter((result) => result.error)
+    setOutputs(successful)
     setRunning(false)
 
-    if (!result.success) {
-      setError(result.error?.message || "Audio conversion failed.")
-      return
+    if (successful.length > 0) {
+      const url = URL.createObjectURL(successful[0].blob)
+      setAudioUrl(url)
     }
+    if (failed.length > 0) {
+      setError(`${failed.length} file${failed.length === 1 ? "" : "s"} failed to convert.`)
+    }
+  }, [bitrate, clearResults, files, targetFormat])
 
-    const url = URL.createObjectURL(result.data.blob)
-    setAudioUrl(url)
-    setOutput(result.data)
-  }, [file, targetFormat, bitrate])
-
-  const download = useCallback(() => {
-    if (!output) return
+  const download = useCallback((output: AudioConvertOutput) => {
     const url = URL.createObjectURL(output.blob)
     const a = document.createElement("a")
     a.href = url
     a.download = output.fileName
     a.click()
     URL.revokeObjectURL(url)
-  }, [output])
+  }, [])
+
+  const downloadAll = useCallback(async () => {
+    if (outputs.length === 0) return
+    const usedNames = new Set<string>()
+    const archive = await zipBlobs(
+      outputs.map((output) => ({
+        name: uniqueFileName(output.fileName, usedNames),
+        blob: output.blob,
+      })),
+    )
+    const url = URL.createObjectURL(archive)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = `${tool.slug}-converted.zip`
+    a.click()
+    URL.revokeObjectURL(url)
+  }, [outputs, tool.slug])
 
   const togglePlayback = () => {
     if (!audioPlayerRef.current || !audioUrl) return
@@ -134,20 +164,15 @@ export function AudioConverterWidget({
           {/* File Selector Dropzone */}
           <div>
             <FileDropzone
-              file={file}
-              onFile={onFile}
+              files={files}
+              multiple
+              onFiles={onFiles}
               accept={acceptedExtensions}
-              title="Drag & drop your audio file here, or browse"
+              title={files.length > 0 ? "Drag & drop more audio files here, or browse" : "Drag & drop audio files here, or browse"}
               description={hintText}
               onClear={() => {
-                setFile(null)
-                setOutput(null)
-                setError(null)
-                setIsPlaying(false)
-                if (audioUrl) {
-                  URL.revokeObjectURL(audioUrl)
-                  setAudioUrl(null)
-                }
+                setFiles([])
+                clearResults()
               }}
             />
           </div>
@@ -184,7 +209,7 @@ export function AudioConverterWidget({
           <Button
             type="button"
             onClick={convert}
-            disabled={!file || running}
+            disabled={files.length === 0 || running}
             className="w-full text-base py-5 font-semibold"
           >
             {running ? (
@@ -193,7 +218,7 @@ export function AudioConverterWidget({
                 Converting audio… ({progress}%)
               </span>
             ) : (
-              `Convert to ${targetFormat.toUpperCase()}`
+              `Convert ${files.length > 1 ? `${files.length} files` : "file"} to ${targetFormat.toUpperCase()}`
             )}
           </Button>
 
@@ -221,29 +246,29 @@ export function AudioConverterWidget({
           )}
 
           {/* Output Card with Audio Player */}
-          {output && audioUrl && (
+          {outputs.length > 0 && audioUrl && (
             <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-xs">
               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
                 <CheckCircle2 className="size-5" />
-                <span>Conversion Complete!</span>
+                <span>{outputs.length === 1 ? "Conversion Complete!" : `${outputs.length} conversions complete!`}</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 rounded-lg bg-muted/40 p-3 text-xs">
                 <div>
                   <span className="text-muted-foreground block">Format</span>
-                  <span className="font-semibold text-foreground uppercase">{output.format}</span>
+                  <span className="font-semibold text-foreground uppercase">{outputs[0].format}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Size</span>
-                  <span className="font-semibold text-foreground">{formatBytes(output.bytes)}</span>
+                  <span className="font-semibold text-foreground">{formatBytes(outputs[0].bytes)}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Duration</span>
-                  <span className="font-semibold text-foreground">{formatDuration(output.duration)}</span>
+                  <span className="font-semibold text-foreground">{formatDuration(outputs[0].duration)}</span>
                 </div>
                 <div>
                   <span className="text-muted-foreground block">Sample Rate</span>
-                  <span className="font-semibold text-foreground">{output.sampleRate} Hz</span>
+                  <span className="font-semibold text-foreground">{outputs[0].sampleRate} Hz</span>
                 </div>
               </div>
 
@@ -267,7 +292,7 @@ export function AudioConverterWidget({
                 </Button>
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium text-foreground">
-                    {output.fileName}
+                    {outputs[0].fileName}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {isPlaying ? "Playing preview…" : "Listen to converted audio"}
@@ -278,11 +303,11 @@ export function AudioConverterWidget({
               {/* Download Button */}
               <Button
                 type="button"
-                onClick={download}
+                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
                 className="w-full text-base py-5 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
               >
                 <Download className="size-5" />
-                Download {output.fileName}
+                {outputs.length === 1 ? `Download ${outputs[0].fileName}` : "Download all as ZIP"}
               </Button>
             </div>
           )}
