@@ -79,4 +79,43 @@ describe("runAudioConvert", () => {
     expect(result.data.format).toBe("wav")
     expect(result.data.bytes).toBe(44 + 44100 * 2) // standard WAV header + 16-bit PCM
   })
+
+  it("routes M4A output through the M4A encoder with the chosen bitrate", async () => {
+    const dummyFile = new File([new Uint8Array(100)], "call.amr", { type: "audio/amr" })
+    let seenBitrate = 0
+    const job = runAudioConvert(
+      { file: dummyFile, format: "m4a", bitrate: 64 },
+      {
+        decode: async () => mockDecoded,
+        encodeM4a: async (_audio, bitrate) => {
+          seenBitrate = bitrate ?? 0
+          return new Blob([new Uint8Array(10)], { type: "audio/mp4" })
+        },
+      },
+    )
+
+    const result = await job.result
+    expect(result.success).toBe(true)
+    expect(result.data.fileName).toBe("call.m4a")
+    expect(result.data.format).toBe("m4a")
+    expect(result.data.bitrate).toBe(64)
+    expect(seenBitrate).toBe(64)
+  })
+
+  it("reports a failure when the M4A encoder throws", async () => {
+    const dummyFile = new File([new Uint8Array(100)], "call.amr", { type: "audio/amr" })
+    const job = runAudioConvert(
+      { file: dummyFile, format: "m4a" },
+      {
+        decode: async () => mockDecoded,
+        encodeM4a: async () => {
+          throw new Error("AAC encoding is not supported")
+        },
+      },
+    )
+
+    const result = await job.result
+    expect(result.success).toBe(false)
+    expect(result.error?.message).toMatch(/AAC encoding/)
+  })
 })

@@ -2,12 +2,14 @@ import type { FileJob } from "@/features/tools/engine"
 import { decodeAudio } from "./decoder"
 import { encodeMp3 } from "./mp3-encoder"
 import { encodeWav } from "./wav-encoder"
+import { encodeM4a } from "./m4a-encoder"
 import type { AudioConvertOptions, AudioConvertOutput } from "./types"
 
 export interface AudioEngineDeps {
   decode?: typeof decodeAudio
   encodeMp3?: typeof encodeMp3
   encodeWav?: typeof encodeWav
+  encodeM4a?: typeof encodeM4a
 }
 
 export function replaceExtension(fileName: string, newExt: string): string {
@@ -26,6 +28,7 @@ export function runAudioConvert(
   const decodeFn = deps.decode || decodeAudio
   const mp3Fn = deps.encodeMp3 || encodeMp3
   const wavFn = deps.encodeWav || encodeWav
+  const m4aFn = deps.encodeM4a || encodeM4a
 
   let cancelled = false
   let onProgress: (p: number) => void = () => {}
@@ -60,6 +63,10 @@ export function runAudioConvert(
         outputBlob = mp3Fn(decoded, options.bitrate || 128, (p) => {
           onProgress(0.3 + p * 0.65)
         })
+      } else if (options.format === "m4a") {
+        outputBlob = await m4aFn(decoded, options.bitrate || 128, (p) => {
+          onProgress(0.3 + p * 0.65)
+        })
       } else {
         onProgress(0.6)
         outputBlob = wavFn(decoded)
@@ -85,7 +92,7 @@ export function runAudioConvert(
           duration: decoded.duration,
           sampleRate: decoded.sampleRate,
           channels: decoded.numberOfChannels,
-          bitrate: options.format === "mp3" ? options.bitrate || 128 : undefined,
+          bitrate: options.format === "wav" ? undefined : options.bitrate || 128,
         },
         meta: {
           bytesIn: inputBytes,

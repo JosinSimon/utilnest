@@ -169,6 +169,7 @@ export const categorySections: Partial<Record<CategorySlug, CategorySection[]>> 
       toolIds: [
         "home-loan-emi-calculator",
         "car-loan-emi-calculator",
+        "used-car-loan-emi-calculator",
         "personal-loan-emi-calculator",
         "emi-calculator",
         "interest-calculator",
@@ -215,7 +216,7 @@ export const categorySections: Partial<Record<CategorySlug, CategorySection[]>> 
       description: "Convert AMR and M4A audio files from Android phones, iPhones, and voice recorders.",
       badge: "High intent",
       layout: "compact",
-      toolIds: ["amr-to-mp3", "amr-to-wav", "m4a-to-mp3"],
+      toolIds: ["amr-to-mp3", "amr-to-m4a", "how-to-play-amr-files", "amr-to-wav", "m4a-to-mp3"],
     },
     {
       id: "format-converters",

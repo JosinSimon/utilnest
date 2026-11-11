@@ -177,10 +177,12 @@ export function AudioConverterWidget({
             />
           </div>
 
-          {/* Bitrate Selector for MP3 */}
-          {targetFormat === "mp3" && (
+          {/* Bitrate Selector for lossy formats (MP3, M4A/AAC) */}
+          {targetFormat !== "wav" && (
             <div className="space-y-3">
-              <Label className="text-sm font-medium">MP3 Audio Quality / Bitrate</Label>
+              <Label className="text-sm font-medium">
+                {targetFormat === "m4a" ? "M4A (AAC)" : "MP3"} Audio Quality / Bitrate
+              </Label>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {BITRATES.map((b) => {
                   const active = bitrate === b.value

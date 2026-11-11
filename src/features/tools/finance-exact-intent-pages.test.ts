@@ -5,6 +5,7 @@ import { seoTitleFor } from "@/data/derive"
 const emiPages = [
   ["home-loan-emi-calculator", 5000000, 8.5, 20],
   ["car-loan-emi-calculator", 1000000, 9.5, 5],
+  ["used-car-loan-emi-calculator", 400000, 12.5, 4],
   ["personal-loan-emi-calculator", 500000, 13, 3],
 ] as const
 

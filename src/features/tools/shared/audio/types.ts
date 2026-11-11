@@ -1,6 +1,6 @@
 export type AudioBitrate = 64 | 128 | 192 | 256 | 320
 
-export type AudioOutputFormat = "mp3" | "wav"
+export type AudioOutputFormat = "mp3" | "wav" | "m4a"
 
 export interface DecodedAudio {
   channelData: Float32Array[]
