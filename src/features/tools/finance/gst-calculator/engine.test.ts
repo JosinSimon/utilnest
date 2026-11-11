@@ -83,6 +83,6 @@ describe("GST calculator engine", () => {
   })
 
   it("exposes the standard slab rates", () => {
-    expect(GstRates).toEqual([0, 3, 5, 12, 18, 28])
+    expect(GstRates).toEqual([0, 3, 5, 12, 18, 28, 40])
   })
 })

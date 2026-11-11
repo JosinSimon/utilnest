@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { site } from "@/data/site"
 
 export interface AdSlotProps {
   slotType?: "leaderboard" | "rectangle" | "inArticle"
@@ -6,6 +7,10 @@ export interface AdSlotProps {
 }
 
 export function AdSlot({ slotType = "rectangle", className }: AdSlotProps) {
+  // Render nothing until AdSense is approved and configured, so visitors
+  // and AdSense reviewers never see empty "Advertisement" boxes.
+  if (!site.adsenseClientId) return null
+
   // Height reservations to prevent Cumulative Layout Shift (CLS)
   const slotStyles = {
     leaderboard: "min-h-[60px] sm:min-h-[90px] w-full max-w-4xl mx-auto",

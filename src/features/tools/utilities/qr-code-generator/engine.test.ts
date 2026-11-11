@@ -3,8 +3,8 @@ import { buildQrPayload, generateQrPng, generateQrSvg } from "./engine"
 
 describe("QR Code Generator Engine", () => {
   it("builds correct URL payload with auto-http protocol", () => {
-    const p1 = buildQrPayload("url", { url: "toolza.com" })
-    expect(p1).toBe("https://toolza.com")
+    const p1 = buildQrPayload("url", { url: "example.com" })
+    expect(p1).toBe("https://example.com")
 
     const p2 = buildQrPayload("url", { url: "http://example.com" })
     expect(p2).toBe("http://example.com")

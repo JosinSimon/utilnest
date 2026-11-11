@@ -115,7 +115,7 @@ export const PRESET_REGISTRY: OfficialSpecPreset[] = [
     exam: "IBPS PO / Clerk",
     organization: "Institute of Banking Personnel Selection",
     documentType: "photo",
-    dimensions: { width: 4.5, height: 3.5, unit: "cm" },
+    dimensions: { width: 200, height: 230, unit: "px" },
     kbMin: 20,
     kbMax: 50,
     acceptedFormats: ["jpeg"],
@@ -128,7 +128,7 @@ export const PRESET_REGISTRY: OfficialSpecPreset[] = [
     lastVerified: "2026-08-07",
     verified: true,
     notes:
-      "IBPS PO/Clerk 2026 photo specification: 20–50 KB, JPEG, 4.5×3.5 cm (or 200×230 px at standard DPI), light/white background.",
+      "IBPS PO/Clerk 2026 photo specification: 20–50 KB, JPEG, 200×230 px preferred (portrait; 4.5 cm tall × 3.5 cm wide), light/white background.",
   },
   {
     id: "ibps-signature",
@@ -174,7 +174,7 @@ export const PRESET_REGISTRY: OfficialSpecPreset[] = [
     exam: "PAN",
     organization: "Income Tax Department (Protean / NSDL & UTITSL)",
     documentType: "photo",
-    dimensions: { width: 3.5, height: 2.5, unit: "cm" },
+    dimensions: { width: 2.5, height: 3.5, unit: "cm" },
     kbMin: 10,
     kbMax: 50,
     acceptedFormats: ["jpeg"],
@@ -186,7 +186,7 @@ export const PRESET_REGISTRY: OfficialSpecPreset[] = [
     lastVerified: "2026-08-11",
     verified: true,
     notes:
-      "Online PAN application photograph is 3.5cm x 2.5cm on white background, max 50 KB in JPEG format.",
+      "Online PAN application photograph is 3.5cm (height) x 2.5cm (width), portrait, on white background, max 50 KB in JPEG format.",
   },
   {
     id: "pan-signature",

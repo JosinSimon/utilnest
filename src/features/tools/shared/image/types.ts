@@ -1,5 +1,5 @@
 /**
- * Shared, renderer-agnostic type definitions for the Toolza image engine.
+ * Shared, renderer-agnostic type definitions for the UtilNest image engine.
  * These types are used by every pure module in `shared/image` and by the
  * impure `driver.ts`. Keeping them here avoids circular imports and gives a
  * single source of truth for the engine contract.

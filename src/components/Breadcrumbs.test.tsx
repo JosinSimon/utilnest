@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 
-import { cleanup, render } from "@testing-library/react"
+import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { MemoryRouter } from "react-router-dom"
 import { Breadcrumbs } from "./Breadcrumbs"
@@ -27,5 +27,14 @@ describe("Breadcrumbs", () => {
     )
 
     expect(errorSpy.mock.calls.flat().join("\n")).not.toContain("same key")
+  })
+
+  it("shows Home only once when the items already start with Home", () => {
+    render(
+      <MemoryRouter>
+        <Breadcrumbs items={[{ label: "Home", path: "/" }, { label: "Finance", path: "/category/finance" }, { label: "Car EMI", path: "/x" }]} />
+      </MemoryRouter>,
+    )
+    expect(screen.getAllByText("Home")).toHaveLength(1)
   })
 })

@@ -18,7 +18,9 @@ export interface GstResult {
   total: number
 }
 
-export const GstRates = [0, 3, 5, 12, 18, 28] as const
+// Main slabs since 22 Sep 2025 are 5%, 18% and 40%; 12% and 28% remain for
+// older invoices and a few items (e.g. some tobacco products).
+export const GstRates = [0, 3, 5, 12, 18, 28, 40] as const
 
 /** Round a rupee/paisa value to whole paise (2 decimal places). */
 const toPaise = (value: number): number => Math.round(value * 100)

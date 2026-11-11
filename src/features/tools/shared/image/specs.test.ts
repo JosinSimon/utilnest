@@ -2,6 +2,12 @@ import { describe, it, expect } from "vitest"
 import { PRESET_REGISTRY, getPresetById, presetVerificationText } from "./specs"
 
 describe("preset registry integrity", () => {
+  it("keeps every photo preset portrait (taller than wide)", () => {
+    for (const preset of PRESET_REGISTRY.filter((p) => p.documentType === "photo")) {
+      expect(preset.dimensions.height, preset.id).toBeGreaterThan(preset.dimensions.width)
+    }
+  })
+
   it("has no duplicate ids", () => {
     const ids = PRESET_REGISTRY.map((p) => p.id)
     expect(new Set(ids).size).toBe(ids.length)
@@ -73,7 +79,7 @@ describe("preset registry integrity", () => {
 
   it("keeps official dimensions for passport and PAN presets", () => {
     expect(getPresetById("passport-photo")?.dimensions).toEqual({ width: 3.5, height: 4.5, unit: "cm" })
-    expect(getPresetById("pan-photo")?.dimensions).toEqual({ width: 3.5, height: 2.5, unit: "cm" })
+    expect(getPresetById("pan-photo")?.dimensions).toEqual({ width: 2.5, height: 3.5, unit: "cm" })
     expect(getPresetById("pan-signature")?.dimensions).toEqual({ width: 4.5, height: 2.0, unit: "cm" })
   })
 })

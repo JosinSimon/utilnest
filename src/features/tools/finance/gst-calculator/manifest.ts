@@ -19,7 +19,7 @@ export const definition: ToolDefinition = {
     },
     {
       heading: "Why use our GST calculator?",
-      body: "It handles two modes in one place: adding GST to a net amount and extracting GST from a gross amount. It splits the total tax into CGST and SGST at all standard rates (0%, 3%, 5%, 12%, 18%, 28%). Results update instantly as you type, are formatted in Indian Rupees, and are always 100% private.",
+      body: "It handles two modes in one place: adding GST to a net amount and extracting GST from a gross amount. It splits the total tax into CGST and SGST at every rate: 0%, 3%, 5%, 18% and 40%, plus 12% and 28% for older invoices and the few items still taxed at those rates. Results update instantly as you type, are formatted in Indian Rupees, and are always 100% private.",
     },
   ],
 
@@ -66,7 +66,7 @@ export const definition: ToolDefinition = {
     {
       question: "What are the GST rates in India?",
       answer:
-        "The principal GST slab rates in India are 0%, 3%, 5%, 12%, 18% and 28%. Most goods and services fall under 5% or 18%; luxury items and demerit goods sit at 28%.",
+        "Since 22 September 2025, the main GST rates are 5% and 18%, with a 40% rate for luxury and sin goods. Some items are exempt (0%), gold is taxed at 3%, and a few tobacco products are still at 28%. The old 12% and 28% slabs were largely merged into 5% and 18%. Check the current rate for your item, as rates can change.",
     },
     {
       question: "Is a 7% or 10% GST rate standard for this calculator service?",
@@ -91,7 +91,7 @@ export const definition: ToolDefinition = {
     },
     {
       title: "Pick the GST rate",
-      description: "Select a standard slab (0%, 3%, 5%, 12%, 18% or 28%) or enter a custom rate.",
+      description: "Select a rate (0%, 3%, 5%, 18% or 40%, or 12%/28% for older invoices) or enter a custom rate.",
     },
     {
       title: "Choose the sale type",

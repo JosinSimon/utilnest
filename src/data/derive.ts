@@ -49,6 +49,8 @@ export function categoryBreadcrumbs(categoryName: string): Breadcrumb[] {
 const exactToolTitles: Record<string, string> = {
   "emi-calculator": "EMI Calculator India - Home, Car & Personal Loan EMI",
   "home-loan-emi-calculator": "Home Loan EMI Calculator India - Calculate Housing Loan EMI",
+  "home-loan-prepayment-calculator": "Home Loan Prepayment Calculator - Reduce EMI or Tenure",
+  "home-loan-eligibility-calculator": "Home Loan Eligibility Calculator India - Based on Salary",
   "car-loan-emi-calculator": "Car EMI Calculator India 2026 - New Car Loan EMI & Interest",
   "used-car-loan-emi-calculator": "Used Car Loan EMI Calculator India - Second-Hand Car EMI",
   "commission-calculator": "Commission Calculator - Sales, Agent & Slab Commission with GST",
@@ -63,6 +65,7 @@ const exactToolTitles: Record<string, string> = {
   "sip-calculator": "SIP Calculator India - Mutual Fund Returns Calculator",
   "fd-calculator": "FD Calculator India - Fixed Deposit Maturity Calculator",
   "ppf-calculator": "PPF Calculator India - Maturity & Interest Calculator",
+  "compress-image": "Compress Image to KB for Govt Forms - 20KB, 50KB, 100KB",
   "compress-image-to-50kb": "Compress Image to 50KB Online Free",
   "compress-image-to-100kb": "Compress Image to 100KB Online - JPG & Photo Under 100 KB",
   "resize-signature-140x60": "Resize Signature to 140x60 Pixels (10-20KB) - IBPS, SSC",
@@ -99,19 +102,32 @@ const categoryTitles: Record<string, string> = {
   audio: "Free Audio Tools Online - AMR to MP3, M4A & WAV Converter",
 }
 
-function titleCase(value: string): string {
+const UPPERCASE_WORDS = new Set([
+  "PDF", "JPG", "PNG", "GST", "EMI", "SIP", "FD", "RD", "PPF", "HRA", "QR", "UUID", "UPI",
+  "AMR", "MP3", "WAV", "M4A", "AAC", "OGG", "DPI", "FY", "SSC", "IBPS", "NEET", "PAN", "SBI", "RRB", "UPSC",
+])
+const SPECIAL_WORDS: Record<string, string> = { webp: "WebP", base64: "Base64" }
+const SMALL_WORDS = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "vs", "with"])
+
+/** Title-cases a keyword for search titles: "change image dpi" → "Change Image DPI". */
+export function titleCase(value: string): string {
   return value
     .split(/\s+/)
-    .map((word) => {
-      const upper = word.toUpperCase()
-      if (["PDF", "JPG", "PNG", "WEBP", "GST", "EMI", "SIP", "FD", "RD", "PPF", "HRA", "QR", "UUID", "UPI", "AMR", "MP3", "WAV", "M4A", "AAC", "OGG"].includes(upper)) return upper
+    .map((word, index) => {
+      const lower = word.toLowerCase()
+      if (UPPERCASE_WORDS.has(word.toUpperCase())) return word.toUpperCase()
+      if (SPECIAL_WORDS[lower]) return SPECIAL_WORDS[lower]
+      if (/^\d+(kb|mb)$/i.test(word)) return word.toUpperCase()
+      if (index > 0 && SMALL_WORDS.has(lower)) return lower
       return word.charAt(0).toUpperCase() + word.slice(1)
     })
     .join(" ")
 }
 
 export function seoTitleFor(tool: ToolDefinition): string {
-  const title = exactToolTitles[tool.slug] ?? `${titleCase(tool.primaryKeyword)} Online Free`
+  const keyword = titleCase(tool.primaryKeyword)
+  const suffix = /\bonline\b/i.test(keyword) ? "Free" : "Online Free"
+  const title = exactToolTitles[tool.slug] ?? `${keyword} ${suffix}`
   return `${title} | ${site.name}`
 }
 

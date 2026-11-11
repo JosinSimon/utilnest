@@ -1,7 +1,11 @@
 import type { ReactNode } from "react"
 import { Seo } from "@/components/seo/Seo"
 import { site } from "@/data/site"
+import { Link } from "react-router-dom"
 import { ShieldCheck, Lock, FileText, Mail } from "lucide-react"
+import { categories } from "@/data/categories"
+import { getToolsByCategory, totalToolCount } from "@/data/registry"
+import { categoryPath } from "@/data/derive"
 
 function Page({
   title,
@@ -53,36 +57,69 @@ function routePath(title: string): string {
 }
 
 export function AboutPage() {
+  const sortedCategories = [...categories].sort((a, b) => a.order - b.order)
   return (
     <Page
       title="About UtilNest"
-      seoTitle={`About ${site.name} | ${site.domain}`}
-      description={`Learn about ${site.name} (${site.domain}), a free, private, browser-native online tools platform.`}
-      updated="August 11, 2026"
+      seoTitle={`About ${site.name} - Free, Private Online Tools for India`}
+      description={`${site.name} is a free collection of calculators, PDF, image and audio tools that run in your browser. Learn how the tools work and how we check them.`}
+      updated="November 11, 2026"
     >
       <div className="rounded-2xl border border-primary/20 bg-primary/5 p-6 mb-6">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mt-0">
-          <ShieldCheck className="size-5 text-primary" /> Welcome to {site.name}
+          <ShieldCheck className="size-5 text-primary" /> What {site.name} is
         </h2>
         <p className="mt-2 text-sm text-foreground/90 mb-0">
-          {site.name} (<a href={site.url} className="text-primary font-medium">{site.domain}</a>) is a free collection of everyday online tools and utilities built for students, freelancers, professionals, and businesses across India.
+          {site.name} (<a href={site.url} className="text-primary font-medium">{site.domain}</a>) is a free collection of {totalToolCount}+ everyday online tools: loan and tax calculators, PDF and image tools, exam photo and signature resizers, invoice and quotation generators, and audio converters. It is built for students, job seekers, freelancers and small businesses in India, and anyone else who needs a quick, reliable tool without signing up.
         </p>
       </div>
 
-      <h3 className="text-foreground font-bold">Our Philosophy: Zero Uploads, Maximum Speed</h3>
+      <h2 className="text-foreground font-bold text-xl">Why we built it</h2>
       <p>
-        Traditional online tools require you to upload your sensitive PDFs, documents, tax statements, or personal images to remote servers. At {site.name}, we believe your private files should remain private.
+        Most free online tools ask you to upload your files to their servers. That is a real risk when the file is an Aadhaar card, a PAN card, a salary slip, a signed agreement or a call recording. Many of those sites are also slow, full of pop-ups, or stop working after a few uses unless you pay.
       </p>
       <p>
-        Every calculator, image compressor, PDF utility, invoice generator, and QR generator on {site.domain} runs 100% locally inside your browser using modern WebAssembly and JavaScript APIs.
+        {site.name} takes a different approach. The tools run inside your own browser, so the work happens on your phone or computer, not on a server. There is no account to create and no daily limit.
       </p>
 
-      <h3 className="text-foreground font-bold">Key Pillars</h3>
+      <h2 className="text-foreground font-bold text-xl">How the tools handle your files</h2>
       <ul className="list-disc pl-5 space-y-2">
-        <li><strong>100% Free:</strong> No registration, no credit cards, no hidden limits.</li>
-        <li><strong>Client-Side Processing:</strong> Your files never touch external servers or databases.</li>
-        <li><strong>Tailored for India:</strong> Built with GST, Income Tax, SSC/UPSC form specifications, and UPI payment standards.</li>
+        <li><strong>Files stay on your device.</strong> When you compress a PDF, resize a photo or convert an audio file, the file is processed by code running in your browser. It is not uploaded to {site.name} or to anyone else.</li>
+        <li><strong>Calculators send nothing.</strong> Loan amounts, salaries and tax figures you type are calculated in the page and are not stored.</li>
+        <li><strong>What we do measure.</strong> We use Google Analytics to count visits and see which tools are used, so we know what to improve. It never receives the files you process or the numbers you type. Details are in our <Link to="/privacy" className="text-primary underline">Privacy Policy</Link>.</li>
       </ul>
+
+      <h2 className="text-foreground font-bold text-xl">How we check the tools</h2>
+      <p>
+        Calculators use the standard published formulas (for example, the reducing-balance EMI formula used by Indian banks) and are covered by automated tests that compare results with worked examples. Exam and document photo sizes are taken from official notifications, and each tool page shows when it was last updated. Requirements change every exam cycle, so the pages also remind you to check your own notification before uploading.
+      </p>
+      <p>
+        If you find a mistake, such as a wrong formula, an outdated exam size or a broken tool, please <Link to="/contact" className="text-primary underline">tell us</Link>. Corrections are our top priority.
+      </p>
+
+      <h2 className="text-foreground font-bold text-xl">What you can do here</h2>
+      <ul className="list-disc pl-5 space-y-2">
+        {sortedCategories.map((category) => (
+          <li key={category.slug}>
+            <Link to={categoryPath(category.slug)} className="font-semibold text-primary underline">
+              {category.name}
+            </Link>{" "}
+            ({getToolsByCategory(category.slug).length} tools): {category.tagline}
+          </li>
+        ))}
+      </ul>
+
+      <h2 className="text-foreground font-bold text-xl">How {site.name} stays free</h2>
+      <p>
+        Every tool is free to use, with no sign-up, no watermarks and no paid tier. To cover hosting and development costs, {site.name} may show a small number of ads from Google AdSense. Ads never get access to your files or the data you enter in the tools.
+      </p>
+
+      <h2 className="text-foreground font-bold text-xl">Get in touch</h2>
+      <p>
+        Questions, tool requests and corrections are welcome. Email{" "}
+        <a className="font-semibold text-primary underline" href={`mailto:${site.legalEmail}`}>{site.legalEmail}</a>{" "}
+        or visit the <Link to="/contact" className="text-primary underline">contact page</Link>.
+      </p>
     </Page>
   )
 }
@@ -205,38 +242,58 @@ export function ContactPage() {
   return (
     <Page
       title="Contact Us"
-      seoTitle={`Contact Us | ${site.name} (${site.domain})`}
-      description={`Get in touch with the ${site.name} team for tool requests, feedback, or support.`}
-      updated="August 11, 2026"
+      seoTitle={`Contact ${site.name} - Report a Bug, Request a Tool`}
+      description={`Contact ${site.name} to report a bug, request a new tool, correct an exam photo size or ask about privacy. Email ${site.legalEmail}.`}
+      updated="November 11, 2026"
     >
       <div className="rounded-2xl border border-indigo-500/20 bg-indigo-500/5 p-6 mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2 mt-0">
-            <Mail className="size-5 text-indigo-600" /> Have Questions or Feature Requests?
+            <Mail className="size-5 text-indigo-600" /> Email us
           </h2>
           <p className="mt-1 text-sm text-foreground/90 mb-0">
-            We love hearing from our users! Suggest a tool or report a bug.
+            The fastest way to reach us is email:{" "}
+            <a className="font-semibold text-primary underline" href={`mailto:${site.legalEmail}`}>{site.legalEmail}</a>
           </p>
         </div>
         <a
           href={`mailto:${site.legalEmail}`}
           className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground shadow transition-transform hover:scale-105 active:scale-95 shrink-0"
         >
-          <Mail className="size-4" /> Email Support
+          <Mail className="size-4" /> Email {site.name}
         </a>
       </div>
 
-      <h3 className="text-foreground font-bold">Direct Email</h3>
       <p>
-        You can reach our team directly at{" "}
-        <a className="font-bold text-primary underline" href={`mailto:${site.legalEmail}`}>
-          {site.legalEmail}
-        </a>. We aim to respond within 24 hours.
+        {site.name} is an independent project, and we read every message. To help us reply quickly, use a subject line that starts with one of the topics below.
       </p>
 
-      <h3 className="text-foreground font-bold">Tool Requests</h3>
+      <h2 className="text-foreground font-bold text-xl">Report a bug</h2>
       <p>
-        Looking for a specific calculator, converter, or utility that isn't on {site.domain} yet? Drop us an email with your specs and we'll prioritize building it!
+        Use the subject <strong>Bug:</strong> followed by the tool name. Tell us the page link, what you expected and what happened instead, and which device and browser you used (for example, "Android phone, Chrome"). A screenshot helps.
+      </p>
+      <p>
+        <strong>Please do not email us your private files</strong>, such as ID cards, photos, signatures or call recordings. If a file causes a problem, describe it instead (format, size in KB or MB, and where it came from). Our tools are designed so we never need to see your files.
+      </p>
+
+      <h2 className="text-foreground font-bold text-xl">Correct an exam or document size</h2>
+      <p>
+        Use the subject <strong>Correction:</strong>. Exam photo and signature rules change each year. If a size on {site.name} doesn't match your official notification, send us the exam name, the year and a link to the notification, and we will update the tool.
+      </p>
+
+      <h2 className="text-foreground font-bold text-xl">Request a new tool</h2>
+      <p>
+        Use the subject <strong>Tool request:</strong>. Describe what you need it to do and, if possible, an example input and the result you expect.
+      </p>
+
+      <h2 className="text-foreground font-bold text-xl">Privacy questions</h2>
+      <p>
+        Use the subject <strong>Privacy:</strong>. Our <Link to="/privacy" className="text-primary underline">Privacy Policy</Link> explains what we collect (anonymous usage statistics) and what we never collect (the files you process and the data you type into tools). Our <Link to="/terms" className="text-primary underline">Terms of Use</Link> cover how the tools may be used.
+      </p>
+
+      <h2 className="text-foreground font-bold text-xl">Business and partnership enquiries</h2>
+      <p>
+        Use the subject <strong>Business:</strong> for partnerships, embedding a tool on your website, or other enquiries.
       </p>
     </Page>
   )

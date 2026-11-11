@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 import { headForRoute } from "@/app/prerender-head"
-import { seoTitleFor, seoTitleForCategory } from "@/data/derive"
+import { seoTitleFor, seoTitleForCategory, titleCase } from "@/data/derive"
 import { getToolBySlug, allTools } from "@/data/registry"
 import { categories, categoryBySlug } from "@/data/categories"
 import { site } from "@/data/site"
@@ -17,6 +17,21 @@ describe("SEO data", () => {
     expect(seoTitleFor(pdf!)).toBe("PDF Compressor Online Free - Compress PDF in Browser | UtilNest")
     expect(seoTitleFor(emi!)).not.toMatch(/calculator calculator/i)
     expect(seoTitleFor(pdf!)).not.toMatch(/generator generator|compress pdf generator/i)
+  })
+
+  it("title-cases keywords like a person would", () => {
+    expect(titleCase("change image dpi")).toBe("Change Image DPI")
+    expect(titleCase("find and replace")).toBe("Find and Replace")
+    expect(titleCase("webp to png converter")).toBe("WebP to PNG Converter")
+    expect(titleCase("compress image to 50kb")).toBe("Compress Image to 50KB")
+    expect(titleCase("to the point")).toBe("To the Point")
+  })
+
+  it("gives every tool a unique title without a doubled 'Online'", () => {
+    const titles = allTools.map((tool) => seoTitleFor(tool))
+    const dupes = titles.filter((title, i) => titles.indexOf(title) !== i)
+    expect(dupes).toEqual([])
+    for (const title of titles) expect(title).not.toMatch(/online .*online/i)
   })
 
   it("builds clean category titles", () => {

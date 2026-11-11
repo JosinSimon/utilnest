@@ -195,7 +195,7 @@ export default function ReceiptGenerator({ tool: _tool }: { tool: ToolDefinition
               
               <div className="mt-8 text-center border-t border-gray-100 pt-4" style={{ marginTop: "32px", textAlign: "center", borderTop: "1px solid #f3f4f6", paddingTop: "16px" }}>
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-600" style={{ fontSize: "11px", color: "#059669" }}>
-                  ● Generated via Toolza
+                  ● Generated with UtilNest (utilnest.in)
                 </span>
               </div>
             </div>

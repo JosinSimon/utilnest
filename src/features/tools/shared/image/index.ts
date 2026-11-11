@@ -1,5 +1,5 @@
 /**
- * Toolza shared image engine — public API.
+ * UtilNest shared image engine — public API.
  * Pure modules (geometry, specs, validator, metadata, encoder, compressor) are
  * renderer-agnostic. Only `driver` touches the browser canvas.
  */

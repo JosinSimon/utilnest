@@ -15,6 +15,8 @@ export const site = {
   gtmId: "",
   gaId: "",
   clarityId: "",
+  // AdSense publisher ID (e.g. "ca-pub-1234567890123456"). Ad slots stay hidden until this is set.
+  adsenseClientId: "",
   legalEmail: "support@utilnest.in",
   logoImage: `${SITE_URL}/icon-512.png`,
   defaultOgImage: `${SITE_URL}/og/default.png`,

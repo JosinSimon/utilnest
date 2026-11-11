@@ -7,6 +7,7 @@ export interface BreadcrumbItem {
 }
 
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
+  const visible = items.filter((item) => item.path !== "/")
   return (
     <nav aria-label="Breadcrumb" className="mb-4">
       <ol className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground">
@@ -21,8 +22,9 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
           </Link>
         </li>
 
-        {items.map((item, index) => {
-          const isLast = index === items.length - 1
+        {/* The Home link above is always shown, so skip a "/" item passed in too. */}
+        {visible.map((item, index) => {
+          const isLast = index === visible.length - 1
           return (
             <li key={`${item.path}-${index}`} className="flex items-center gap-1.5">
               <ChevronRight className="size-3 text-muted-foreground/60 shrink-0" />

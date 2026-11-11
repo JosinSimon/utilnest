@@ -185,7 +185,7 @@ export default function InvoiceGenerator({ tool: _tool }: { tool: ToolDefinition
                       <div className="sm:col-span-3 space-y-1"><Label>GST (%)</Label>
                         <select className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring" 
                           value={item.gstRate} onChange={e => updateItem(item.id, "gstRate", parseInt(e.target.value) as GstRate)}>
-                          {[0, 3, 5, 12, 18, 28].map(r => <option key={r} value={r}>{r}%</option>)}
+                          {[0, 3, 5, 12, 18, 28, 40].map(r => <option key={r} value={r}>{r}%</option>)}
                         </select>
                       </div>
                     </div>

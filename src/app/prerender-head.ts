@@ -92,10 +92,22 @@ export function headForRoute(route: StaticRoute): string {
 
 function headForLegal(path: string): string {
   const labels: Record<string, { title: string; desc: string }> = {
-    "/about": { title: `About | ${site.name}`, desc: "Learn about our free online tools platform." },
-    "/privacy": { title: `Privacy Policy | ${site.name}`, desc: "How we protect your privacy." },
-    "/terms": { title: `Terms of Use | ${site.name}`, desc: "Terms for using our tools." },
-    "/contact": { title: `Contact | ${site.name}`, desc: "Get in touch with us." },
+    "/about": {
+      title: `About ${site.name} - Free, Private Online Tools for India`,
+      desc: `${site.name} is a free collection of calculators, PDF, image and audio tools that run in your browser. Learn how the tools work and how we check them.`,
+    },
+    "/privacy": {
+      title: `Privacy Policy | ${site.name}`,
+      desc: `How ${site.name} handles your data: files and numbers you enter stay on your device; we use anonymous analytics and may show Google ads.`,
+    },
+    "/terms": {
+      title: `Terms of Use | ${site.name}`,
+      desc: `The terms for using ${site.name}'s free online calculators, converters, PDF, image and audio tools.`,
+    },
+    "/contact": {
+      title: `Contact ${site.name} - Report a Bug, Request a Tool`,
+      desc: `Contact ${site.name} to report a bug, request a new tool, correct an exam photo size or ask about privacy. Email ${site.legalEmail}.`,
+    },
   }
   const item = labels[path] ?? labels["/about"]
   return headHtml({

@@ -17,8 +17,8 @@ export default function QrCodeGenerator({ tool: _tool }: { tool: ToolDefinition 
   const [type, setType] = useState<QrType>("url")
   
   // Data state
-  const [text, setText] = useState("Hello Toolza!")
-  const [url, setUrl] = useState("https://toolza.com")
+  const [text, setText] = useState("Hello from UtilNest!")
+  const [url, setUrl] = useState("https://utilnest.in")
   const [email, setEmail] = useState({ email: "contact@example.com", subject: "Inquiry", body: "" })
   const [phone, setPhone] = useState("+919876543210")
   const [sms, setSms] = useState({ phone: "+919876543210", message: "Hello!" })
