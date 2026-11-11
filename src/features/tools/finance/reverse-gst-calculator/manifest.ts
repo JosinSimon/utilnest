@@ -8,7 +8,7 @@ export const definition: ToolDefinition = {
   path: "finance/gst-calculator",
 
   shortDescription:
-    "Remove GST from a total amount instantly — work out the pre-GST value, the GST component and CGST/SGST split at 5%, 12%, 18% or 28%. Free, accurate and private.",
+    "Remove GST from a total amount instantly — work out the pre-GST value, the GST component and CGST/SGST split at 5%, 18%, 40% or any rate. Free, accurate and private.",
   longDescription:
     "Whenever a price or invoice already includes GST, the reverse GST calculation tells you how much of that amount is tax. This free reverse GST calculator opens in Remove-GST mode: enter the inclusive total, pick the rate, and instantly see the base amount before GST, the GST component, and the CGST + SGST (or IGST) split. Ideal for invoices, client bills, expense claims, input tax credit work and retail prices in India. Everything runs on your device — no sign-up, no uploads.",
   sections: [
@@ -22,7 +22,7 @@ export const definition: ToolDefinition = {
     },
     {
       heading: "Common GST rates in India",
-      body: "Indian GST slabs are 0%, 3%, 5%, 12%, 18% and 28%. Essentials like food grains sit at 0% or 5%, most processed goods and services around 12% and 18%, and luxury or demerit goods at 28%. Select the slab that applies to the item on your invoice — when no GST applies, use 0%.",
+      body: "Since 22 September 2025, the main GST rates are 5% and 18%, with 40% for luxury and sin goods. Essentials are often exempt (0%) or at 5%, most goods and services are at 18%, and gold is at 3%. Older invoices may show 12% or 28%, which are still available here. Use the rate printed on your invoice; when no GST applies, use 0%.",
     },
     {
       heading: "Where reverse GST matters",
@@ -90,7 +90,7 @@ export const definition: ToolDefinition = {
     {
       question: "Which GST rate should I use?",
       answer:
-        "Use the slab that applies to the goods or service on your invoice: 0%, 3%, 5%, 12%, 18% or 28%. Most business-to-business items fall at 18%; essentials at 5% or 0%. When in doubt, your invoice should state the rate.",
+        "Use the rate printed on your invoice. Since 22 September 2025 the main rates are 5%, 18% and 40%, while invoices from before then may show 12% or 28%. Most business services are at 18%.",
     },
     {
       question: "Is this calculator India-specific?",
@@ -109,7 +109,7 @@ export const definition: ToolDefinition = {
     },
     {
       title: "Pick the GST rate",
-      description: "Select the slab on the invoice: 5%, 12%, 18% or 28%.",
+      description: "Select the rate on the invoice, for example 5%, 18% or 40%.",
     },
     {
       title: "Choose the sale type",
