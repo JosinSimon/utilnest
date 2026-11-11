@@ -51,4 +51,20 @@ describe("Age Calculator Engine", () => {
     expect(res.isValid).toBe(false)
     expect(res.errorMessage).toContain("future")
   })
+
+  it("uses 1 March as a 29 February birthday in non-leap years, for age and next birthday alike", () => {
+    const dayBefore = calculateAge("2000-02-29", "2026-02-28")
+    expect(dayBefore.years).toBe(25)
+    expect(dayBefore.nextBirthday.daysRemaining).toBe(1)
+    expect(dayBefore.nextBirthday.dateFormatted).toBe("March 1, 2026")
+
+    const onBirthday = calculateAge("2000-02-29", "2026-03-01")
+    expect(onBirthday.years).toBe(26)
+    expect(onBirthday.months).toBe(0)
+    expect(onBirthday.days).toBe(0)
+    expect(onBirthday.nextBirthday.daysRemaining).toBe(0)
+
+    const leapYear = calculateAge("2000-02-29", "2027-03-02")
+    expect(leapYear.nextBirthday.dateFormatted).toBe("February 29, 2028")
+  })
 })

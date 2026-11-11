@@ -6,7 +6,15 @@ import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
-import { runImageCrop, type CropRect, type CropFormat } from "./engine"
+import {
+  runImageCrop,
+  fitAspectBox,
+  normalisedAspect,
+  resizeFromCorner,
+  type CropRect,
+  type CropFormat,
+  type Corner,
+} from "./engine"
 
 const MIN_FRACTION = 0.05
 
@@ -23,21 +31,7 @@ const PRESET_ASPECTS: { label: string; ratio?: number }[] = [
   { label: "16:9", ratio: 16 / 9 },
 ]
 
-/** Fit a box of a given aspect ratio inside [0,1]², anchored near the previous box centre. */
-function fitAspect(ratio: number, prev: CropRect): CropRect {
-  let nw = 1
-  let nh = 1
-  if (ratio >= 1) {
-    nw = 1
-    nh = 1 / ratio
-  } else {
-    nh = 1
-    nw = ratio
-  }
-  const cx = Math.min(Math.max(prev.x + prev.width / 2, nw / 2), 1 - nw / 2)
-  const cy = Math.min(Math.max(prev.y + prev.height / 2, nh / 2), 1 - nh / 2)
-  return { x: cx - nw / 2, y: cy - nh / 2, width: nw, height: nh }
-}
+const CORNERS: Corner[] = ["nw", "ne", "sw", "se"]
 
 export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
   const [file, setFile] = useState<File | null>(null)
@@ -46,13 +40,14 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
   const [aspect, setAspect] = useState<number | null>(null)
   const [format, setFormat] = useState<CropFormat>("jpeg")
   const [running, setRunning] = useState(false)
-  const [output, setOutput] = useState<{ blob: Blob; fileName: string; bytes: number } | null>(null)
+  const [imgSize, setImgSize] = useState<{ width: number; height: number } | null>(null)
+  const [output, setOutput] = useState<{ blob: Blob; fileName: string; bytes: number; width: number; height: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const wrapRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<
     | { mode: "none" }
     | { mode: "move"; sx: number; sy: number; rect: CropRect }
-    | { mode: "resize"; sx: number; sy: number; rect: CropRect }
+    | { mode: "resize"; corner: Corner; rect: CropRect }
   >({ mode: "none" })
 
   const onFile = useCallback((f: File | undefined) => {
@@ -66,6 +61,7 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
     const image = new Image()
     image.onload = () => {
       setImgUrl(image.src)
+      setImgSize({ width: image.naturalWidth, height: image.naturalHeight })
       setBox({ x: 0, y: 0, width: 1, height: 1 })
     }
     image.src = url
@@ -74,9 +70,9 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
   const selectAspect = useCallback(
     (next: number | null) => {
       setAspect(next)
-      if (next != null && box) setBox(fitAspect(next, box))
+      if (next != null && box && imgSize) setBox(fitAspectBox(next, imgSize.width, imgSize.height, box))
     },
-    [box],
+    [box, imgSize],
   )
 
   /** Convert a pointer's client coords into a 0..1 fraction of the crop area. */
@@ -87,16 +83,20 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
     return { fx: Math.min(1, Math.max(0, (cx - r.left) / r.width)), fy: Math.min(1, Math.max(0, (cy - r.top) / r.height)) }
   }, [])
 
+  // Drag inside the box to move it; drag a corner handle to resize it.
+  // Pointer events cover mouse, touch and pen alike.
   const onPointerDown = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!box) return
       e.preventDefault()
-      const { fx, fy } = toFraction(e.clientX, e.clientY)
-      const hitEdgeX = Math.abs(fx - box.x) < 0.03 || Math.abs(fx - (box.x + box.width)) < 0.03
-      const inX = fx >= box.x && fx <= box.x + box.width
-      const inY = fy >= box.y && fy <= box.y + box.height
-      const mode = inX && inY && hitEdgeX && e.shiftKey ? "resize" : inX && inY ? "move" : "none"
-      dragRef.current = { mode, sx: e.clientX, sy: e.clientY, rect: { ...box } }
+      const corner = (e.target as HTMLElement).dataset.corner as Corner | undefined
+      if (corner) {
+        dragRef.current = { mode: "resize", corner, rect: { ...box } }
+      } else {
+        const { fx, fy } = toFraction(e.clientX, e.clientY)
+        const inside = fx >= box.x && fx <= box.x + box.width && fy >= box.y && fy <= box.y + box.height
+        dragRef.current = inside ? { mode: "move", sx: e.clientX, sy: e.clientY, rect: { ...box } } : { mode: "none" }
+      }
       ;(e.currentTarget as HTMLElement).setPointerCapture(e.pointerId)
     },
     [box, toFraction],
@@ -105,13 +105,13 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
   const onPointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       const d = dragRef.current
-      if (d.mode === "none" || !box) return
+      if (d.mode === "none") return
       const el = wrapRef.current
       if (!el) return
-      const r = el.getBoundingClientRect()
-      const dx = (e.clientX - d.sx) / r.width
-      const dy = (e.clientY - d.sy) / r.height
       if (d.mode === "move") {
+        const r = el.getBoundingClientRect()
+        const dx = (e.clientX - d.sx) / r.width
+        const dy = (e.clientY - d.sy) / r.height
         setBox({
           x: Math.min(1 - d.rect.width, Math.max(0, d.rect.x + dx)),
           y: Math.min(1 - d.rect.height, Math.max(0, d.rect.y + dy)),
@@ -119,15 +119,12 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
           height: d.rect.height,
         })
       } else {
-        setBox({
-          x: d.rect.x,
-          y: d.rect.y,
-          width: Math.min(1 - d.rect.x, Math.max(MIN_FRACTION, d.rect.width + dx)),
-          height: Math.min(1 - d.rect.y, Math.max(MIN_FRACTION, d.rect.height + dy)),
-        })
+        const { fx, fy } = toFraction(e.clientX, e.clientY)
+        const lockedAspect = aspect != null && imgSize ? normalisedAspect(aspect, imgSize.width, imgSize.height) : null
+        setBox(resizeFromCorner(d.rect, d.corner, fx, fy, MIN_FRACTION, lockedAspect))
       }
     },
-    [box],
+    [aspect, imgSize, toFraction],
   )
 
   const onPointerUp = useCallback(() => {
@@ -165,7 +162,7 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
         <CardHeader>
           <CardTitle>{tool.name}</CardTitle>
           <CardDescription>
-            Crop an image with a draggable, resizable box. All in-browser — nothing is uploaded.
+            Drag the box to move it and drag a corner to resize it, on a phone or a computer. All in-browser — nothing is uploaded.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-5">
@@ -181,6 +178,7 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
                 setFile(null)
                 setImgUrl(null)
                 setBox(null)
+                setImgSize(null)
                 setOutput(null)
               }}
             />
@@ -215,14 +213,31 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
             >
               <img src={imgUrl} alt="Crop source" className="block w-full" draggable={false} />
               <div
-                className="absolute border-2 border-white shadow-[inset_0_0_0_9999px_rgba(0,0,0,0.35)]"
+                className="absolute border-2 border-white shadow-[0_0_0_9999px_rgba(0,0,0,0.45)]"
                 style={{
                   left: `${box.x * 100}%`,
                   top: `${box.y * 100}%`,
                   width: `${box.width * 100}%`,
                   height: `${box.height * 100}%`,
                 }}
-              />
+              >
+                {CORNERS.map((corner) => (
+                  <span
+                    key={corner}
+                    data-corner={corner}
+                    aria-hidden="true"
+                    className={cn(
+                      // 32px touch target with a visible 14px handle in the middle.
+                      "absolute flex size-8 items-center justify-center",
+                      "after:block after:size-3.5 after:rounded-full after:border-2 after:border-primary after:bg-white after:shadow after:pointer-events-none",
+                      // Kept inside the box so they are never clipped at the image edge.
+                      corner.includes("n") ? "-top-px" : "-bottom-px",
+                      corner.includes("w") ? "-left-px" : "-right-px",
+                      corner === "nw" || corner === "se" ? "cursor-nwse-resize" : "cursor-nesw-resize",
+                    )}
+                  />
+                ))}
+              </div>
             </div>
           )}
           {!imgUrl && file && <p className="text-sm text-muted-foreground">Loading image…</p>}
@@ -253,7 +268,7 @@ export default function ImageCropper({ tool }: { tool: ToolDefinition }) {
                 <span className="text-muted-foreground">File size</span>
                 <span>{formatBytes(output.bytes)}</span>
                 <span className="text-muted-foreground">Crop</span>
-                <span>{box ? `${box.width * 100}% × ${box.height * 100}%` : "—"}</span>
+                <span>{`${output.width} × ${output.height} px`}</span>
               </div>
               <Button type="button" onClick={download} className="w-full">
                 Download

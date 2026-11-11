@@ -119,29 +119,15 @@ export function calculateAge(dobStr: string, targetStr?: string): AgeResult {
   const totalMonths = years * 12 + months
   const totalHours = totalDays * 24
 
-  // Next Birthday Calculation
-  let nextBdayYear = targetYear
-  let nextBdayMonth = birthMonth
-  let nextBdayDay = birthDay
+  // Next birthday. People born on 29 February celebrate on 1 March in
+  // non-leap years, the same rule the age above uses.
+  const birthdayIn = (year: number): Date =>
+    isFeb29LeapBaby && !isLeapYear(year)
+      ? new Date(year, 2, 1)
+      : new Date(year, birthMonth, birthDay)
 
-  // Handle Feb 29 for non-leap target years
-  if (isFeb29LeapBaby && !isLeapYear(nextBdayYear)) {
-    nextBdayDay = 28 // Or Feb 28
-  }
-
-  let nextBday = new Date(nextBdayYear, nextBdayMonth, nextBdayDay)
-  nextBday.setHours(0, 0, 0, 0)
-
-  if (nextBday < target) {
-    nextBdayYear += 1
-    if (isFeb29LeapBaby && !isLeapYear(nextBdayYear)) {
-      nextBdayDay = 28
-    } else if (isFeb29LeapBaby && isLeapYear(nextBdayYear)) {
-      nextBdayDay = 29
-    }
-    nextBday = new Date(nextBdayYear, nextBdayMonth, nextBdayDay)
-    nextBday.setHours(0, 0, 0, 0)
-  }
+  let nextBday = birthdayIn(targetYear)
+  if (nextBday < target) nextBday = birthdayIn(targetYear + 1)
 
   const daysUntilNextBday = Math.round((nextBday.getTime() - target.getTime()) / (1000 * 60 * 60 * 24))
   const monthsUntilNextBday = Math.floor(daysUntilNextBday / 30.4375)

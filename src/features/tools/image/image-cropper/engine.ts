@@ -106,3 +106,62 @@ export function runImageCrop(input: ImageCropInput): FileJob<ImageCropOutput> {
 }
 
 export { toArrayBuffer }
+// ---- Crop box geometry (normalised 0..1 coordinates) ----
+
+export type Corner = "nw" | "ne" | "sw" | "se"
+
+/**
+ * A pixel aspect ratio (e.g. 16/9) expressed in normalised box units for an
+ * image of the given size: w/h in 0..1 space that gives `ratio` in pixels.
+ */
+export function normalisedAspect(ratio: number, imageWidth: number, imageHeight: number): number {
+  return (ratio * imageHeight) / imageWidth
+}
+
+/** Largest box with a true pixel `ratio`, centred near the previous box. */
+export function fitAspectBox(ratio: number, imageWidth: number, imageHeight: number, prev: CropRect): CropRect {
+  const a = normalisedAspect(ratio, imageWidth, imageHeight)
+  const w = a >= 1 ? 1 : a
+  const h = a >= 1 ? 1 / a : 1
+  const cx = Math.min(Math.max(prev.x + prev.width / 2, w / 2), 1 - w / 2)
+  const cy = Math.min(Math.max(prev.y + prev.height / 2, h / 2), 1 - h / 2)
+  return { x: cx - w / 2, y: cy - h / 2, width: w, height: h }
+}
+
+/**
+ * Resizes a box by dragging one corner to (fx, fy); the opposite corner stays
+ * fixed. With `aspect` (normalised units) the box keeps its shape.
+ */
+export function resizeFromCorner(
+  rect: CropRect,
+  corner: Corner,
+  fx: number,
+  fy: number,
+  minSize: number,
+  aspect: number | null,
+): CropRect {
+  const east = corner === "ne" || corner === "se"
+  const south = corner === "sw" || corner === "se"
+  const ax = east ? rect.x : rect.x + rect.width
+  const ay = south ? rect.y : rect.y + rect.height
+  const maxW = east ? 1 - ax : ax
+  const maxH = south ? 1 - ay : ay
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v))
+
+  let w = clamp(east ? fx - ax : ax - fx, minSize, maxW)
+  let h = clamp(south ? fy - ay : ay - fy, minSize, maxH)
+  if (aspect) {
+    // Follow whichever direction the pointer moved further, then fit the bounds.
+    w = Math.max(w, h * aspect)
+    h = w / aspect
+    if (w > maxW) {
+      w = maxW
+      h = w / aspect
+    }
+    if (h > maxH) {
+      h = maxH
+      w = h * aspect
+    }
+  }
+  return { x: east ? ax : ax - w, y: south ? ay : ay - h, width: w, height: h }
+}

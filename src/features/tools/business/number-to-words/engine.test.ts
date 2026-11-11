@@ -1,4 +1,4 @@
-import { expect, test, describe } from "vitest"
+import { it, expect, test, describe } from "vitest"
 import { numberToWordsEngine } from "./engine"
 
 describe("Number to Words Engine", () => {
@@ -31,5 +31,21 @@ describe("Number to Words Engine", () => {
     expect(result).not.toBeNull()
     expect(result?.words).toBe("Two Thousand Crore")
     expect(result?.words).not.toContain("undefined")
+  })
+
+  it("reads plain-mode decimals digit by digit", () => {
+    const say = (value: number) => numberToWordsEngine({ value, system: "indian", mode: "plain" })?.words
+    expect(say(12.5)).toBe("Twelve Point Five")
+    expect(say(3.05)).toBe("Three Point Zero Five")
+    expect(say(0.75)).toBe("Zero Point Seven Five")
+    expect(say(3.14159)).toBe("Three Point One Four One Five Nine")
+    expect(say(1.9999999)).toBe("Two")
+    expect(say(-2.5)).toBe("Minus Two Point Five")
+    expect(say(100)).toBe("One Hundred")
+  })
+
+  it("keeps currency mode in paise", () => {
+    const r = numberToWordsEngine({ value: 12.5, system: "indian", mode: "currency", currencyCode: "INR" })
+    expect(r?.words).toMatch(/Twelve Rupees and Fifty Paise/)
   })
 })

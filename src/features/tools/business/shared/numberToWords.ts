@@ -156,6 +156,14 @@ function resolveCurrency(options: NumberToWordsOptions): { mainSingular: string;
   }
 }
 
+const DIGIT_WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"]
+
+/** Decimal digits of a number as typed (max 6, trailing zeros dropped): 12.50 → "5". */
+export function fractionDigits(value: number): string {
+  const fixed = Math.abs(value).toFixed(6)
+  return fixed.slice(fixed.indexOf(".") + 1).replace(/0+$/, "")
+}
+
 export function convertNumberToWords(
   value: number,
   options: NumberToWordsOptions = {},
@@ -204,13 +212,13 @@ export function convertNumberToWords(
     }
     if (appendOnly) words += " Only"
   } else {
-    // plain mode
-    if (wholeNumber === 0 && decimalNumber === 0) {
-      words = "Zero"
-    } else {
-      words = wholeWords || "Zero"
-      if (decimalNumber > 0) words += ` Point ${decimalWords}`
-    }
+    // Plain mode reads decimals digit by digit, as people say them:
+    // 12.5 → "Twelve Point Five", 3.05 → "Three Point Zero Five".
+    const rounded = Number(abs.toFixed(6))
+    const plainWhole = Math.floor(rounded)
+    const digits = fractionDigits(rounded)
+    words = plainWhole === 0 ? "Zero" : toWords(plainWhole)
+    if (digits) words += ` Point ${digits.split("").map((d) => DIGIT_WORDS[Number(d)]).join(" ")}`
   }
 
   if (isNegative) words = `Minus ${words}`

@@ -109,7 +109,7 @@ export const definition: ToolDefinition = {
     {
       question: "What if I was born on 29 February?",
       answer:
-        "The calculator recognises leap-day birthdays and shows a note. It still gives your exact age and a next-birthday date in years that have no 29 February.",
+        "The calculator recognises leap-day birthdays and shows a note. In years without 29 February it treats 1 March as your birthday, both for your age and for the next-birthday countdown, which is the rule many countries use for legal age.",
     },
     {
       question: "Is my date of birth stored?",

@@ -16,7 +16,7 @@ export const definition: ToolDefinition = {
   sections: [
     {
       heading: "How the crop box works",
-      body: "When you add an image, the crop box covers the whole picture. Press a ratio button (1:1, 4:3, 3:2 or 16:9) to give the box a new shape, then drag it to frame the part you want to keep. On a computer you can also hold Shift and drag near the left or right edge of the box to change its size. Press Crop & save to create the new image, then download it.",
+      body: "When you add an image, the crop box covers the whole picture. Press a ratio button (1:1, 4:3, 3:2 or 16:9) to lock the box to that exact pixel ratio, or leave it on Free. Drag inside the box to move it, and drag any of the four round corner handles to make it bigger or smaller. This works with a finger on a phone as well as with a mouse. When a ratio is locked, the box keeps that ratio while you resize it. Press Crop & save to create the new image, then download it.",
     },
     {
       heading: "No quality loss from scaling",
@@ -99,6 +99,11 @@ export const definition: ToolDefinition = {
         "No. The part you keep is saved at its original pixels with no scaling. JPG output uses high quality compression; choose PNG if you need a lossless file.",
     },
     {
+      question: "How do I crop an image to a square?",
+      answer:
+        "Press 1:1. The box becomes the largest square that fits your photo, for example 3000 × 3000 pixels on a 4000 × 3000 photo. Drag it over the part you want, resize it from a corner if needed, and it stays square.",
+    },
+    {
       question: "How do I crop to an exact pixel size like 200 × 230?",
       answer:
         "Crop first to frame the subject, then open the Image Resizer and enter the exact width and height. The resizer is built for exact pixel sizes.",
@@ -106,7 +111,7 @@ export const definition: ToolDefinition = {
     {
       question: "Can I crop on my phone?",
       answer:
-        "Yes. On a phone, use the ratio buttons to set the box size and drag the box with your finger. Resizing the box by its edge needs a keyboard Shift key, so it works on computers only.",
+        "Yes. Drag the box with your finger to move it, and drag a round corner handle to resize it. The ratio buttons work the same way on a phone as on a computer.",
     },
     {
       question: "Which formats can I crop?",
@@ -125,11 +130,11 @@ export const definition: ToolDefinition = {
     },
     {
       title: "Set the box shape",
-      description: "Press 1:1, 4:3, 3:2 or 16:9 to change the crop box, or leave it on Free to start from the whole image.",
+      description: "Press 1:1, 4:3, 3:2 or 16:9 to lock an exact ratio, or leave it on Free.",
     },
     {
       title: "Drag to frame",
-      description: "Move the box over the part you want to keep. On a computer, Shift-drag an edge to resize it.",
+      description: "Drag the box over the part you want to keep, and drag a corner handle to resize it.",
     },
     {
       title: "Crop and download",

@@ -16,7 +16,7 @@ export const definition: ToolDefinition = {
   sections: [
     {
       heading: "Text or logo: which to use",
-      body: "A text watermark is the quickest choice. Type something short such as \"© Priya Studio\" or your Instagram handle. The text is drawn in white with a soft dark shadow, so it stays readable on both light and dark photos. A logo watermark suits a business with a brand mark. Use a PNG with a transparent background, otherwise the logo shows as a box with its own background. If you add both text and a logo, they are placed at the same position and can overlap, so for most photos pick one.",
+      body: "A text watermark is the quickest choice. Type something short such as \"© Priya Studio\" or your Instagram handle. The text is drawn in white with a soft dark shadow, so it stays readable on both light and dark photos. A logo watermark suits a business with a brand mark. Use a transparent PNG or an SVG, otherwise the logo shows as a box with its own background. You can also use both: the logo is placed with the text just below it, lined up with the corner you choose, so they never overlap.",
     },
     {
       heading: "Choosing position, size and opacity",
@@ -96,7 +96,7 @@ export const definition: ToolDefinition = {
     {
       question: "Can I use my logo as a watermark?",
       answer:
-        "Yes. Add your logo as a PNG or JPG file. A PNG with a transparent background gives the cleanest result because only the logo shape is drawn on the photo.",
+        "Yes. Add your logo as a PNG, JPG or SVG file. A transparent PNG or an SVG gives the cleanest result because only the logo shape is drawn on the photo. You can add text too; it appears just below the logo.",
     },
     {
       question: "What opacity should I use?",
