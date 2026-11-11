@@ -168,6 +168,8 @@ export const categorySections: Partial<Record<CategorySlug, CategorySection[]>> 
       layout: "compact",
       toolIds: [
         "home-loan-emi-calculator",
+        "home-loan-eligibility-calculator",
+        "home-loan-prepayment-calculator",
         "car-loan-emi-calculator",
         "used-car-loan-emi-calculator",
         "personal-loan-emi-calculator",

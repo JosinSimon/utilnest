@@ -59,10 +59,10 @@ export const definition: ToolDefinition = {
   searchWeight: 100,
 
   relatedTools: [
+    "home-loan-eligibility-calculator",
+    "home-loan-prepayment-calculator",
     "emi-calculator",
     "car-loan-emi-calculator",
-    "personal-loan-emi-calculator",
-    "interest-calculator",
     "income-tax-calculator",
   ],
   featured: false,
