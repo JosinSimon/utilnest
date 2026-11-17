@@ -8,8 +8,9 @@ import { SegmentedControl } from "@/components/ui/segmented"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runCompress, type CompressToolOutput } from "./engine"
-import { processFilesSequentially, uniqueFileName } from "@/features/tools/shared/batch"
-import { zipBlobs } from "@/features/tools/shared/zip"
+import { processFilesSequentially, type BatchItem } from "@/features/tools/shared/batch"
+import { downloadBlob } from "@/features/tools/shared/download"
+import { BatchResults } from "@/features/tools/shared/BatchResults"
 import type { TargetKbOptions } from "@/features/tools/shared/image"
 
 type Mode = "range" | "exact"
@@ -43,7 +44,8 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     allowDownscale: true,
   })
   const [running, setRunning] = useState(false)
-  const [outputs, setOutputs] = useState<CompressToolOutput[]>([])
+  const [results, setResults] = useState<BatchItem<CompressToolOutput>[]>([])
+  const outputs = results.flatMap((result) => (result.data ? [result.data] : []))
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
@@ -54,7 +56,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
   const onFiles = useCallback((incoming: File[]) => {
     if (incoming.length === 0) return
     setFiles((previous) => [...previous, ...incoming])
-    setOutputs([])
+    setResults([])
     setError(null)
     setPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
@@ -100,7 +102,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     }
     setRunning(true)
     setError(null)
-    setOutputs([])
+    setResults([])
     const results = await processFilesSequentially(
       files,
       async (file, onFileProgress) => {
@@ -114,7 +116,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     )
     const successful = results.flatMap((result) => (result.data ? [result.data] : []))
     const failed = results.filter((result) => result.error)
-    setOutputs(successful)
+    setResults(results)
     setRunning(false)
     const warnings = successful.filter((result) => result.status !== "ok").length
     if (failed.length > 0 || warnings > 0) {
@@ -122,31 +124,8 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
     }
   }, [buildTarget, files])
 
-  const download = useCallback((output: CompressToolOutput) => {
-    const url = URL.createObjectURL(output.blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = output.fileName
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [])
+  const download = useCallback((output: CompressToolOutput) => downloadBlob(output.blob, output.fileName), [])
 
-  const downloadAll = useCallback(async () => {
-    if (outputs.length === 0) return
-    const usedNames = new Set<string>()
-    const archive = await zipBlobs(
-      outputs.map((output) => ({
-        name: uniqueFileName(output.fileName, usedNames),
-        blob: output.blob,
-      })),
-    )
-    const url = URL.createObjectURL(archive)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${tool.slug}-compressed.zip`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [outputs, tool.slug])
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -172,7 +151,7 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
                 setFiles([])
                 if (preview) URL.revokeObjectURL(preview)
                 setPreview(null)
-                setOutputs([])
+                setResults([])
                 setError(null)
               }}
             />
@@ -296,7 +275,18 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
             </p>
           )}
 
-          {outputs.length > 0 && (
+          {results.length > 1 && (
+            <BatchResults
+              results={results}
+              zipName={`${tool.slug}-compressed.zip`}
+              describe={(output) => ({
+                details: [`${output.width} × ${output.height} px`, `quality ${Math.round(output.quality * 100)}%`],
+                warning: output.status !== "ok" ? output.message || "Not spec-compliant" : undefined,
+              })}
+            />
+          )}
+
+          {results.length === 1 && outputs.length > 0 && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Size</span>
@@ -312,11 +302,11 @@ export default function CompressImage({ tool }: { tool: ToolDefinition }) {
               </div>
               <Button
                 type="button"
-                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                onClick={() => download(outputs[0])}
                 variant={outputs[0].status === "ok" ? "default" : "outline"}
                 className="w-full"
               >
-                {outputs.length === 1 ? `Download${outputs[0].status !== "ok" ? " (not spec-compliant)" : ""}` : "Download all as ZIP"}
+                {`Download${outputs[0].status !== "ok" ? " (not spec-compliant)" : ""}`}
               </Button>
             </div>
           )}

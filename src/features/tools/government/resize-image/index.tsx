@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react"
+import { useCallback, useState } from "react"
 import type { ToolDefinition } from "@/data/types"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -8,8 +8,9 @@ import { SegmentedControl } from "@/components/ui/segmented"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
 import { runResize, type ResizeToolOutput } from "./engine"
-import { processFilesSequentially, uniqueFileName } from "@/features/tools/shared/batch"
-import { zipBlobs } from "@/features/tools/shared/zip"
+import { processFilesSequentially, type BatchItem } from "@/features/tools/shared/batch"
+import { downloadBlob } from "@/features/tools/shared/download"
+import { BatchResults } from "@/features/tools/shared/BatchResults"
 
 type Format = "jpeg" | "png"
 
@@ -23,12 +24,12 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
   const [files, setFiles] = useState<File[]>([])
   const [form, setForm] = useState<FormState>({ width: "", height: "", format: "jpeg" })
   const [running, setRunning] = useState(false)
-  const [outputs, setOutputs] = useState<ResizeToolOutput[]>([])
+  const [results, setResults] = useState<BatchItem<ResizeToolOutput>[]>([])
+  const outputs = results.flatMap((result) => (result.data ? [result.data] : []))
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const [sourceDims, setSourceDims] = useState<{ width: number; height: number } | null>(null)
   const [keepAspect, setKeepAspect] = useState(true)
-  const downloadUrlRef = useRef<string | null>(null)
 
   const set = <K extends keyof FormState>(key: K, value: FormState[K]) =>
     setForm((f) => ({ ...f, [key]: value }))
@@ -50,12 +51,8 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
   const onFiles = useCallback(async (incoming: File[]) => {
     if (incoming.length === 0) return
     setFiles((previous) => [...previous, ...incoming])
-    setOutputs([])
+    setResults([])
     setError(null)
-    if (downloadUrlRef.current) {
-      URL.revokeObjectURL(downloadUrlRef.current)
-      downloadUrlRef.current = null
-    }
     setPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
       return URL.createObjectURL(incoming[0])
@@ -75,7 +72,7 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
     }
     setRunning(true)
     setError(null)
-    setOutputs([])
+    setResults([])
     const results = await processFilesSequentially(
       files,
       async (file, onFileProgress) => {
@@ -87,40 +84,16 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
       },
       () => {},
     )
-    const successful = results.flatMap((result) => (result.data ? [result.data] : []))
     const failed = results.filter((result) => result.error)
-    setOutputs(successful)
+    setResults(results)
     setRunning(false)
     if (failed.length > 0) {
       setError(`${failed.length} file${failed.length === 1 ? "" : "s"} failed to resize.`)
     }
   }, [files, form])
 
-  const download = useCallback((output: ResizeToolOutput) => {
-    if (downloadUrlRef.current) URL.revokeObjectURL(downloadUrlRef.current)
-    downloadUrlRef.current = URL.createObjectURL(output.blob)
-    const a = document.createElement("a")
-    a.href = downloadUrlRef.current
-    a.download = output.fileName
-    a.click()
-  }, [])
+  const download = useCallback((output: ResizeToolOutput) => downloadBlob(output.blob, output.fileName), [])
 
-  const downloadAll = useCallback(async () => {
-    if (outputs.length === 0) return
-    const usedNames = new Set<string>()
-    const archive = await zipBlobs(
-      outputs.map((output) => ({
-        name: uniqueFileName(output.fileName, usedNames),
-        blob: output.blob,
-      })),
-    )
-    const url = URL.createObjectURL(archive)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${tool.slug}-resized.zip`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [outputs, tool.slug])
 
   return (
     <div className="mx-auto w-full max-w-2xl space-y-6">
@@ -144,7 +117,7 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
               onClear={() => {
                 setFiles([])
                 if (preview) URL.revokeObjectURL(preview)
-                setOutputs([])
+                setResults([])
                 setPreview(null)
                 setSourceDims(null)
                 setError(null)
@@ -216,7 +189,17 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
             </p>
           )}
 
-          {outputs.length > 0 && (
+          {results.length > 1 && (
+            <BatchResults
+              results={results}
+              zipName={`${tool.slug}-resized.zip`}
+              describe={(output) => ({
+                details: [`${output.width} × ${output.height} px`, output.format.toUpperCase()],
+              })}
+            />
+          )}
+
+          {results.length === 1 && outputs.length > 0 && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">Dimensions</span>
@@ -230,10 +213,10 @@ export default function ResizeImage({ tool }: { tool: ToolDefinition }) {
               </div>
               <Button
                 type="button"
-                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                onClick={() => download(outputs[0])}
                 className="w-full"
               >
-                {outputs.length === 1 ? "Download" : "Download all as ZIP"}
+                Download
               </Button>
             </div>
           )}

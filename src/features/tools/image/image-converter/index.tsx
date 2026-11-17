@@ -6,8 +6,9 @@ import { Label } from "@/components/ui/label"
 import { SegmentedControl } from "@/components/ui/segmented"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
-import { processFilesSequentially, uniqueFileName } from "@/features/tools/shared/batch"
-import { zipBlobs } from "@/features/tools/shared/zip"
+import { processFilesSequentially, type BatchItem } from "@/features/tools/shared/batch"
+import { downloadBlob } from "@/features/tools/shared/download"
+import { BatchResults } from "@/features/tools/shared/BatchResults"
 import { runImageConvert, type ImageConvertOutput, type ConvertFormat } from "./engine"
 
 const FORMATS: { value: ConvertFormat; label: string; sub: string }[] = [
@@ -21,14 +22,15 @@ export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
   const [format, setFormat] = useState<ConvertFormat>(tool.preset?.outputFormat ?? "jpeg")
   const [quality, setQuality] = useState(0.9)
   const [running, setRunning] = useState(false)
-  const [outputs, setOutputs] = useState<ImageConvertOutput[]>([])
+  const [results, setResults] = useState<BatchItem<ImageConvertOutput>[]>([])
+  const outputs = results.flatMap((result) => (result.data ? [result.data] : []))
   const [error, setError] = useState<string | null>(null)
   const [preview, setPreview] = useState<string | null>(null)
 
   const onFiles = useCallback((incoming: File[]) => {
     if (incoming.length === 0) return
     setFiles((previous) => [...previous, ...incoming])
-    setOutputs([])
+    setResults([])
     setError(null)
     setPreview((previous) => {
       if (previous) URL.revokeObjectURL(previous)
@@ -40,7 +42,7 @@ export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
     if (files.length === 0) return
     setRunning(true)
     setError(null)
-    setOutputs([])
+    setResults([])
     const results = await processFilesSequentially(
       files,
       async (file, onFileProgress) => {
@@ -52,40 +54,16 @@ export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
       },
       () => {},
     )
-    const successful = results.flatMap((result) => (result.data ? [result.data] : []))
     const failed = results.filter((result) => result.error)
-    setOutputs(successful)
+    setResults(results)
     setRunning(false)
     if (failed.length > 0) {
       setError(`${failed.length} file${failed.length === 1 ? "" : "s"} failed to convert.`)
     }
   }, [files, format, quality])
 
-  const download = useCallback((output: ImageConvertOutput) => {
-    const url = URL.createObjectURL(output.blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = output.fileName
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [])
+  const download = useCallback((output: ImageConvertOutput) => downloadBlob(output.blob, output.fileName), [])
 
-  const downloadAll = useCallback(async () => {
-    if (outputs.length === 0) return
-    const usedNames = new Set<string>()
-    const archive = await zipBlobs(
-      outputs.map((output) => ({
-        name: uniqueFileName(output.fileName, usedNames),
-        blob: output.blob,
-      })),
-    )
-    const url = URL.createObjectURL(archive)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${tool.slug}-converted.zip`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [outputs, tool.slug])
 
   const canAdjustQuality = format !== "png"
 
@@ -113,7 +91,7 @@ export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
                 setFiles([])
                 if (preview) URL.revokeObjectURL(preview)
                 setPreview(null)
-                setOutputs([])
+                setResults([])
               }}
             />
             {preview && (
@@ -163,13 +141,23 @@ export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
             </p>
           )}
 
-          {outputs.length > 0 && (
+          {results.length > 1 && (
+            <BatchResults
+              results={results}
+              zipName={`${tool.slug}-converted.zip`}
+              describe={(output) => ({
+                details: [`${output.width} × ${output.height} px`, output.format === "jpeg" ? "JPG" : output.format.toUpperCase()],
+              })}
+            />
+          )}
+
+          {results.length === 1 && outputs.length > 0 && (
             <div className="space-y-3 rounded-lg border bg-card p-4">
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <span className="text-muted-foreground">New size</span>
                 <span>{formatBytes(outputs[0].bytes)}</span>
                 <span className="text-muted-foreground">Original</span>
-                <span>{files.length === 1 ? formatBytes(files[0].size) : `${files.length} originals`}</span>
+                <span>{formatBytes(results[0].input.size)}</span>
                 <span className="text-muted-foreground">Dimensions</span>
                 <span>
                   {outputs[0].width} × {outputs[0].height} px
@@ -179,10 +167,10 @@ export default function ImageConverter({ tool }: { tool: ToolDefinition }) {
               </div>
               <Button
                 type="button"
-                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                onClick={() => download(outputs[0])}
                 className="w-full"
               >
-                {outputs.length === 1 ? `Download ${outputs[0].fileName}` : "Download all as ZIP"}
+                {`Download ${outputs[0].fileName}`}
               </Button>
             </div>
           )}

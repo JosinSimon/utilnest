@@ -6,8 +6,9 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { FileDropzone } from "@/components/ui/file-dropzone"
 import { cn, formatBytes } from "@/lib/utils"
-import { processFilesSequentially, uniqueFileName } from "../batch"
-import { zipBlobs } from "../zip"
+import { processFilesSequentially, type BatchItem } from "../batch"
+import { downloadBlob } from "../download"
+import { BatchResults } from "../BatchResults"
 import { runAudioConvert } from "./driver"
 import type { AudioBitrate, AudioOutputFormat, AudioConvertOutput } from "./types"
 
@@ -36,7 +37,8 @@ export function AudioConverterWidget({
   const [bitrate, setBitrate] = useState<AudioBitrate>(128)
   const [running, setRunning] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [outputs, setOutputs] = useState<AudioConvertOutput[]>([])
+  const [results, setResults] = useState<BatchItem<AudioConvertOutput>[]>([])
+  const outputs = results.flatMap((result) => (result.data ? [result.data] : []))
   const [error, setError] = useState<string | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [audioUrl, setAudioUrl] = useState<string | null>(null)
@@ -52,7 +54,7 @@ export function AudioConverterWidget({
   }, [audioUrl])
 
   const clearResults = useCallback(() => {
-    setOutputs([])
+    setResults([])
     setError(null)
     setIsPlaying(false)
     if (audioUrl) {
@@ -93,7 +95,7 @@ export function AudioConverterWidget({
 
     const successful = results.flatMap((result) => (result.data ? [result.data] : []))
     const failed = results.filter((result) => result.error)
-    setOutputs(successful)
+    setResults(results)
     setRunning(false)
 
     if (successful.length > 0) {
@@ -105,31 +107,8 @@ export function AudioConverterWidget({
     }
   }, [bitrate, clearResults, files, targetFormat])
 
-  const download = useCallback((output: AudioConvertOutput) => {
-    const url = URL.createObjectURL(output.blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = output.fileName
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [])
+  const download = useCallback((output: AudioConvertOutput) => downloadBlob(output.blob, output.fileName), [])
 
-  const downloadAll = useCallback(async () => {
-    if (outputs.length === 0) return
-    const usedNames = new Set<string>()
-    const archive = await zipBlobs(
-      outputs.map((output) => ({
-        name: uniqueFileName(output.fileName, usedNames),
-        blob: output.blob,
-      })),
-    )
-    const url = URL.createObjectURL(archive)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `${tool.slug}-converted.zip`
-    a.click()
-    URL.revokeObjectURL(url)
-  }, [outputs, tool.slug])
 
   const togglePlayback = () => {
     if (!audioPlayerRef.current || !audioUrl) return
@@ -248,7 +227,17 @@ export function AudioConverterWidget({
           )}
 
           {/* Output Card with Audio Player */}
-          {outputs.length > 0 && audioUrl && (
+          {results.length > 1 && (
+            <BatchResults
+              results={results}
+              zipName={`${tool.slug}-converted.zip`}
+              describe={(output) => ({
+                details: [formatDuration(output.duration), output.format.toUpperCase()],
+              })}
+            />
+          )}
+
+          {results.length === 1 && outputs.length > 0 && audioUrl && (
             <div className="space-y-4 rounded-xl border border-border bg-card p-5 shadow-xs">
               <div className="flex items-center gap-2 text-emerald-600 dark:text-emerald-400 font-semibold text-sm">
                 <CheckCircle2 className="size-5" />
@@ -305,11 +294,11 @@ export function AudioConverterWidget({
               {/* Download Button */}
               <Button
                 type="button"
-                onClick={outputs.length === 1 ? () => download(outputs[0]) : downloadAll}
+                onClick={() => download(outputs[0])}
                 className="w-full text-base py-5 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white dark:bg-emerald-600 dark:hover:bg-emerald-700"
               >
                 <Download className="size-5" />
-                {outputs.length === 1 ? `Download ${outputs[0].fileName}` : "Download all as ZIP"}
+                {`Download ${outputs[0].fileName}`}
               </Button>
             </div>
           )}
